@@ -47,6 +47,7 @@ dependencies:
 
     # Utils
   flutter_launcher_icons: ^0.13.1
+  provider: ^6.1.5
 
 
 dev_dependencies:
