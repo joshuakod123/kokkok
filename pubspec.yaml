@@ -35,7 +35,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   google_nav_bar: ^5.0.6
-
     # Backend
   supabase_flutter: ^2.5.6
 
@@ -44,11 +43,11 @@ dependencies:
 
     # Local Storage
   shared_preferences: ^2.2.3
-
+  flutter_secure_storage: ^9.2.2
     # Utils
   flutter_launcher_icons: ^0.13.1
   provider: ^6.1.5
-
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
