@@ -48,7 +48,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
     try {
       final user = supabase.auth.currentUser;
       if (user != null) {
-        // 사용자 정보 로드
         String? name = user.userMetadata?['username'];
         if (name == null || name.isEmpty) {
           final profileData = await supabase
@@ -76,7 +75,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
 
   Future<void> _loadCertificationData() async {
     try {
-      // 병렬로 데이터 로드
       await Future.wait([
         _loadNearestTarget(),
         _loadRecommendations(),
@@ -139,7 +137,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
         onRefresh: _refreshData,
         child: CustomScrollView(
           slivers: [
-            // 앱바
             SliverAppBar(
               expandedHeight: 120,
               floating: false,
@@ -161,22 +158,18 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
               actions: [
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
-                  onPressed: () {
-                    // 알림 화면으로 이동
-                  },
+                  onPressed: () {},
                 ),
                 IconButton(
                   icon: const Icon(Icons.search, color: Colors.black87),
                   onPressed: () {
-                    // 검색 화면으로 이동
-                    widget.onNavigateToTab?.call(1); // 탐색 탭으로 이동
+                    widget.onNavigateToTab?.call(1);
                   },
                 ),
                 const SizedBox(width: 8),
               ],
             ),
 
-            // 메인 콘텐츠
             SliverToBoxAdapter(
               child: _isLoading
                   ? const Center(
@@ -190,15 +183,12 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 환영 메시지
                     _buildWelcomeMessage(),
                     const SizedBox(height: 32),
 
-                    // 빠른 액션 버튼들
                     _buildQuickActions(),
                     const SizedBox(height: 32),
 
-                    // D-Day 섹션
                     if (_nearestTarget != null) ...[
                       _buildSectionTitle('나의 다음 목표',
                           subtitle: '목표를 향해 달려가세요! 🎯'),
@@ -210,7 +200,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                       const SizedBox(height: 32),
                     ],
 
-                    // 맞춤 추천 섹션
                     if (_recommendations.isNotEmpty) ...[
                       _buildSectionTitle('콕콕! 맞춤 추천',
                           subtitle: '${_userMajor ?? '당신'}에게 최적화된 자격증'),
@@ -232,7 +221,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                       const SizedBox(height: 32),
                     ],
 
-                    // 인기 급상승 섹션
                     if (_trending.isNotEmpty) ...[
                       _buildSectionTitle('지금 인기 급상승! 🔥',
                           subtitle: '많은 사람들이 도전하고 있어요'),
@@ -255,7 +243,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                       const SizedBox(height: 32),
                     ],
 
-                    // 최신 자격증 정보
                     _buildSectionTitle('최신 자격증 정보',
                         subtitle: '새롭게 추가된 자격증들을 확인해보세요'),
                     const SizedBox(height: 12),
@@ -266,7 +253,6 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                         )
                     ),
 
-                    // 하단 여백
                     const SizedBox(height: 120),
                   ],
                 ),
@@ -394,7 +380,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                 subtitle: '둘러보기',
                 color: Colors.orange,
                 onTap: () {
-                  widget.onNavigateToTab?.call(1); // 탐색 탭으로 이동
+                  widget.onNavigateToTab?.call(1);
                 },
               ),
             ),
@@ -406,7 +392,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
                 subtitle: '진행상황',
                 color: Colors.green,
                 onTap: () {
-                  widget.onNavigateToTab?.call(3); // 나의 스펙 탭으로 이동
+                  widget.onNavigateToTab?.call(3);
                 },
               ),
             ),
@@ -502,13 +488,12 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => AddTargetSheet(onTargetAdded: () {
-        _refreshData(); // 데이터 새로고침
+        _refreshData();
       }),
     );
   }
 }
 
-// 목표 추가 바텀시트
 class AddTargetSheet extends StatefulWidget {
   final VoidCallback onTargetAdded;
 
@@ -599,7 +584,7 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
       if (selectedDate != null && mounted) {
         _userService.addTarget(certification, selectedDate);
         Navigator.pop(context);
-        widget.onTargetAdded(); // 콜백 호출
+        widget.onTargetAdded();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${certification.jmNm} 목표가 추가되었습니다!'),
@@ -620,7 +605,6 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
       ),
       child: Column(
         children: [
-          // 핸들바
           Container(
             margin: const EdgeInsets.only(top: 12),
             width: 40,
@@ -631,7 +615,6 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
             ),
           ),
 
-          // 헤더
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
@@ -651,7 +634,6 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
             ),
           ),
 
-          // 검색바
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: TextField(
@@ -681,7 +663,6 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
 
           const SizedBox(height: 20),
 
-          // 검색 결과 또는 인기 추천
           Expanded(
             child: _searchController.text.isNotEmpty
                 ? _buildSearchResults()
