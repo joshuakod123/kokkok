@@ -4,6 +4,7 @@ import 'enhanced_home_screen.dart';
 import 'certification_browse_screen.dart';
 import 'my_spec_screen.dart';
 import 'profile_screen.dart';
+import 'community_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -20,6 +21,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   int _selectedIndex = 0;
   bool _needsPasswordChange = false;
   bool _isCheckingPasswordStatus = true;
+
+  late AnimationController _navigationAnimationController;
+  late Animation<double> _slideAnimation;
 
   // TabController를 통한 탭 변경을 위한 GlobalKey
   final GlobalKey<NavigatorState> _homeNavigatorKey = GlobalKey<NavigatorState>();
@@ -51,35 +55,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       key: _communityNavigatorKey,
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
-          builder: (context) => const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.construction,
-                  size: 80,
-                  color: Colors.grey,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  '커뮤니티',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '곧 만나요! 🚀',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          builder: (context) => const CommunityScreen(),
         );
       },
     ),
@@ -110,14 +86,28 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _navigationAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _navigationAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkIfPasswordChangeIsNeeded();
     });
+
+    _navigationAnimationController.forward();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _navigationAnimationController.dispose();
     super.dispose();
   }
 
@@ -131,13 +121,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void _navigateToTab(int tabIndex) {
     if (_needsPasswordChange && tabIndex != 4) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('비밀번호 변경을 먼저 완료해주세요.'),
-            backgroundColor: Colors.orange,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        _showPasswordChangeNotification();
       }
       return;
     }
@@ -146,6 +130,33 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       _selectedIndex = tabIndex;
     });
     _tabController.animateTo(tabIndex);
+  }
+
+  void _showPasswordChangeNotification() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Container(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: const Row(
+            children: [
+              Icon(Icons.lock_outline, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '보안을 위해 비밀번호 변경을 먼저 완료해주세요.',
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+      ),
+    );
   }
 
   Future<void> _checkIfPasswordChangeIsNeeded() async {
@@ -173,13 +184,48 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
 
           // 사용자에게 알림 표시
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🔒 보안을 위해 비밀번호를 변경해주세요.'),
-                backgroundColor: Colors.orange,
-                duration: Duration(seconds: 3),
-              ),
-            );
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.security, color: Colors.white, size: 24),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '보안 알림',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '안전을 위해 비밀번호를 변경해주세요.',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    backgroundColor: Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.all(16),
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              }
+            });
           }
         } else {
           setState(() {
@@ -209,42 +255,78 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     // 비밀번호 상태 확인 중일 때 로딩 표시
     if (_isCheckingPasswordStatus) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF8F9FA),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(50),
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).primaryColor.withOpacity(0.1),
+                      Theme.of(context).primaryColor.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
                 child: Icon(
-                  Icons.rocket_launch,
-                  size: 60,
+                  Icons.diamond,
+                  size: 80,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               Text(
                 '콕콕',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: 36,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
                 ),
               ),
               const SizedBox(height: 16),
-              CircularProgressIndicator(
-                color: Theme.of(context).primaryColor,
+              Text(
+                '자격증 관리의 새로운 기준',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              const SizedBox(height: 32),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(50),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                  strokeWidth: 3,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
                 '사용자 정보를 확인하는 중...',
                 style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
+                  color: Colors.grey[500],
+                  fontSize: 14,
                 ),
               ),
             ],
@@ -256,69 +338,90 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: TabBarView(
         controller: _tabController,
-        physics: _needsPasswordChange ? const NeverScrollableScrollPhysics() : null,
+        physics: _needsPasswordChange
+            ? const NeverScrollableScrollPhysics()
+            : const BouncingScrollPhysics(),
         children: _widgetOptions,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-            child: GNav(
-              backgroundColor: Colors.white,
-              color: Colors.grey[600],
-              activeColor: Colors.white,
-              tabBackgroundColor: _needsPasswordChange
-                  ? Colors.orange
-                  : Theme.of(context).primaryColor,
-              gap: 8,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              selectedIndex: _selectedIndex,
-              onTabChange: _onTabChange,
-              tabs: [
-                GButton(
-                  icon: Icons.home_outlined,
-                  text: '홈',
-                  iconColor: _needsPasswordChange ? Colors.grey[400] : Colors.grey[600],
-                  textColor: Colors.white,
+      bottomNavigationBar: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 1),
+          end: Offset.zero,
+        ).animate(_slideAnimation),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: _needsPasswordChange ? Colors.grey[400] : Colors.grey[600],
+                activeColor: Colors.white,
+                tabBackgroundGradient: _needsPasswordChange
+                    ? LinearGradient(
+                  colors: [Colors.orange, Colors.orange.shade600],
+                )
+                    : LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                  ],
                 ),
-                GButton(
-                  icon: Icons.explore_outlined,
-                  text: '탐색',
-                  iconColor: _needsPasswordChange ? Colors.grey[400] : Colors.grey[600],
-                  textColor: Colors.white,
-                ),
-                GButton(
-                  icon: Icons.chat_bubble_outline,
-                  text: '커뮤니티',
-                  iconColor: _needsPasswordChange ? Colors.grey[400] : Colors.grey[600],
-                  textColor: Colors.white,
-                ),
-                GButton(
-                  icon: Icons.assessment_outlined,
-                  text: '나의 스펙',
-                  iconColor: _needsPasswordChange ? Colors.grey[400] : Colors.grey[600],
-                  textColor: Colors.white,
-                ),
-                GButton(
-                  icon: _needsPasswordChange ? Icons.lock : Icons.person_outline,
-                  text: '내 정보',
-                  // 비밀번호 변경이 필요한 경우 강조 표시
-                  iconColor: _needsPasswordChange ? Colors.orange : Colors.grey[600],
-                  textColor: Colors.white,
-                ),
-              ],
+                gap: 10,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                duration: const Duration(milliseconds: 400),
+                curve: Curves.easeInOutCubic,
+                selectedIndex: _selectedIndex,
+                onTabChange: _onTabChange,
+                tabs: [
+                  GButton(
+                    icon: Icons.home_rounded,
+                    text: '홈',
+                    iconActiveColor: Colors.white,
+                    textColor: Colors.white,
+                    iconSize: 22,
+                  ),
+                  GButton(
+                    icon: Icons.explore_rounded,
+                    text: '탐색',
+                    iconActiveColor: Colors.white,
+                    textColor: Colors.white,
+                    iconSize: 22,
+                  ),
+                  GButton(
+                    icon: Icons.people_rounded,
+                    text: '커뮤니티',
+                    iconActiveColor: Colors.white,
+                    textColor: Colors.white,
+                    iconSize: 22,
+                  ),
+                  GButton(
+                    icon: Icons.assessment_rounded,
+                    text: '나의 스펙',
+                    iconActiveColor: Colors.white,
+                    textColor: Colors.white,
+                    iconSize: 22,
+                  ),
+                  GButton(
+                    icon: _needsPasswordChange ? Icons.lock_rounded : Icons.person_rounded,
+                    text: '내 정보',
+                    iconActiveColor: Colors.white,
+                    textColor: Colors.white,
+                    iconSize: 22,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
