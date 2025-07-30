@@ -99,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(  // context 이름 변경
         title: const Text('비밀번호 변경'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           if (!widget.needsPasswordChange)
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.of(dialogContext).pop(),  // dialogContext 사용
               child: const Text('취소'),
             ),
           ElevatedButton(
@@ -160,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .eq('id', userId);
 
                 if (mounted) {
-                  Navigator.of(context).pop();
+                  Navigator.of(dialogContext).pop();  // dialogContext 사용
                   _showSuccessSnackBar('비밀번호가 성공적으로 변경되었습니다.');
                   widget.onPasswordChanged();
                 }
@@ -183,7 +183,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(  // context 이름 변경
         title: const Text('프로필 수정'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,7 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),  // dialogContext 사용
             child: const Text('취소'),
           ),
           ElevatedButton(
@@ -231,7 +231,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   });
 
                   if (mounted) {
-                    Navigator.of(context).pop();
+                    Navigator.of(dialogContext).pop();  // dialogContext 사용
                     _showSuccessSnackBar('프로필이 업데이트되었습니다.');
                     _loadUserProfile();
                   }
@@ -280,7 +280,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showRestoreDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.orange),
@@ -292,12 +292,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             '정말 복원하시겠어요?\n\n현재 휴대폰의 스펙 정보는 모두 사라지고, 서버의 데이터로 대체됩니다. 이 작업은 되돌릴 수 없습니다.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               _restoreFromServer();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),

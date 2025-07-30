@@ -159,3 +159,50 @@ class AnalyticsService {
       return {};
     }
   }
+
+  // 수익화를 위한 새로운 분석 메서드들
+  Future<Map<String, dynamic>> getRevenueAnalytics() async {
+    try {
+      final userId = _supabase.auth.currentUser?.id;
+      if (userId == null) return {};
+
+      // 프리미엄 구독 관련 이벤트 추적
+      final premiumEvents = await _supabase
+          .from('user_analytics_events')
+          .select('event_type, properties, created_at')
+          .eq('user_id', userId)
+          .like('event_type', '%premium%');
+
+      // 광고 클릭 추적
+      final adEvents = await _supabase
+          .from('user_analytics_events')
+          .select('event_type, properties, created_at')
+          .eq('user_id', userId)
+          .like('event_type', '%ad_%');
+
+      return {
+        'premium_interactions': premiumEvents.length,
+        'ad_clicks': adEvents.length,
+        'conversion_potential': _calculateConversionPotential(premiumEvents, adEvents),
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  double _calculateConversionPotential(List<dynamic> premiumEvents, List<dynamic> adEvents) {
+    // 사용자의 프리미엄 전환 가능성 계산
+    double score = 0.0;
+
+    // 프리미엄 기능 관심도
+    if (premiumEvents.length > 5) score += 0.3;
+
+    // 광고 참여도
+    if (adEvents.length > 3) score += 0.2;
+
+    // 앱 활성도 (추가 로직 필요)
+    score += 0.5; // 기본 점수
+
+    return score.clamp(0.0, 1.0);
+  }
+}

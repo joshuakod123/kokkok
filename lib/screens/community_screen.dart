@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -48,7 +47,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).primaryColor.withOpacity(0.1),
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),  // withOpacity를 withValues로 수정
                         Colors.white,
                       ],
                       begin: Alignment.topCenter,
@@ -63,7 +62,7 @@ class _CommunityScreenState extends State<CommunityScreen>
                         child: Icon(
                           Icons.people,
                           size: 100,
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),  // withOpacity를 withValues로 수정
                         ),
                       ),
                       const Positioned(
@@ -131,13 +130,13 @@ class _CommunityScreenState extends State<CommunityScreen>
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),  // withOpacity를 withValues로 수정
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Icon(
                 icon,
                 size: 80,
-                color: Theme.of(context).primaryColor.withOpacity(0.7),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.7),  // withOpacity를 withValues로 수정
               ),
             ),
             const SizedBox(height: 32),
@@ -163,10 +162,10 @@ class _CommunityScreenState extends State<CommunityScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
+                color: Colors.blue.withValues(alpha: 0.1),  // withOpacity를 withValues로 수정
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: Colors.blue.withOpacity(0.3),
+                  color: Colors.blue.withValues(alpha: 0.3),  // withOpacity를 withValues로 수정
                 ),
               ),
               child: Row(

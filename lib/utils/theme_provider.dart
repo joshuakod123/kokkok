@@ -123,9 +123,9 @@ class ThemeProvider extends ChangeNotifier {
   MaterialColor _createMaterialColor(Color color) {
     final strengths = <double>[.05];
     final swatch = <int, Color>{};
-    final r = color.r;
-    final g = color.g;
-    final b = color.b;
+    final r = color.red;  // .r을 .red로 수정
+    final g = color.green;  // .g를 .green으로 수정
+    final b = color.blue;   // .b를 .blue로 수정
 
     for (int i = 1; i < 10; i++) {
       strengths.add(0.1 * i);
