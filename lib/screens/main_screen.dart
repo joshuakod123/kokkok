@@ -5,7 +5,7 @@ import 'enhanced_home_screen.dart';
 import 'certification_browse_screen.dart';
 import 'my_spec_screen.dart';
 import 'profile_screen.dart';
-import 'community_screen.dart';
+import 'new_community_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -56,7 +56,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       key: _communityNavigatorKey,
       onGenerateRoute: (routeSettings) {
         return MaterialPageRoute(
-          builder: (context) => const CommunityScreen(),
+          builder: (context) => const NewCommunityScreen(),
         );
       },
     ),
