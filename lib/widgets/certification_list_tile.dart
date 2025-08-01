@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/certification.dart';
 import '../services/user_certification_service.dart';
+import '../utils/popup_utils.dart';
 
 class CertificationListTile extends StatefulWidget {
   final Certification certification;
@@ -57,12 +58,7 @@ class _CertificationListTileState extends State<CertificationListTile> {
           setState(() {
             _isFavorite = false;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('관심 자격증에서 제거되었습니다'),
-              duration: Duration(seconds: 1),
-            ),
-          );
+          PopupUtils.showInfo(context: context, title: '알림', message: '관심 자격증에서 제거되었습니다.');
         }
       } else {
         await _userService.addFavorite(widget.certification);
@@ -70,24 +66,13 @@ class _CertificationListTileState extends State<CertificationListTile> {
           setState(() {
             _isFavorite = true;
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('관심 자격증에 추가되었습니다'),
-              backgroundColor: Colors.green,
-              duration: Duration(seconds: 1),
-            ),
-          );
+          PopupUtils.showSuccess(context: context, title: '알림', message: '관심 자격증에 추가되었습니다.');
         }
       }
     } catch (e) {
       debugPrint('관심 자격증 토글 오류: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('오류가 발생했습니다. 다시 시도해주세요.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        PopupUtils.showError(context: context, title: '오류', message: '오류가 발생했습니다. 다시 시도해주세요.');
       }
     } finally {
       if (mounted) {
@@ -112,7 +97,7 @@ class _CertificationListTileState extends State<CertificationListTile> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: widget.certification.categoryColor.withValues(alpha: 0.1),
+            color: widget.certification.categoryColor.withAlpha(25),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Icon(
@@ -147,7 +132,7 @@ class _CertificationListTileState extends State<CertificationListTile> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: widget.certification.categoryColor.withValues(alpha: 0.1),
+                    color: widget.certification.categoryColor.withAlpha(25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

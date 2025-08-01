@@ -4,9 +4,8 @@ import '../models/community_models.dart';
 import '../services/community_service.dart';
 import '../services/certification_api_service.dart';
 import '../models/certification.dart';
-import 'community_post_detail_screen.dart';
-import 'create_post_screen.dart';
 import 'study_group_screen.dart';
+import '../utils/popup_utils.dart';
 
 class NewCommunityScreen extends StatefulWidget {
   const NewCommunityScreen({super.key});
@@ -18,12 +17,8 @@ class NewCommunityScreen extends StatefulWidget {
 class _NewCommunityScreenState extends State<NewCommunityScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _communityService = CommunityService();
   final _certificationService = CertificationApiService();
 
-  List<CommunityPost> _trendingPosts = [];
-  List<StudyGroup> _activeStudyGroups = [];
-  List<CommunityPost> _successStories = [];
   List<Certification> _popularCertifications = [];
 
   bool _isLoading = true;
@@ -57,9 +52,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('데이터 로드 실패: $e')),
-        );
+        PopupUtils.showError(context: context, title: '오류', message: '데이터 로드 실패: $e');
       }
     }
   }
@@ -88,7 +81,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        Theme.of(context).primaryColor.withAlpha(25),
                         Colors.white,
                       ],
                       begin: Alignment.topCenter,
@@ -103,7 +96,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                         child: Icon(
                           Icons.people,
                           size: 100,
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                          color: Theme.of(context).primaryColor.withAlpha(25),
                         ),
                       ),
                       const Positioned(
@@ -270,7 +263,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withAlpha(13),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -281,7 +274,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(context).primaryColor.withAlpha(25),
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Icon(
@@ -331,17 +324,17 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.05)],
+                  colors: [Colors.orange.withAlpha(25), Colors.red.withAlpha(13)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
+                border: Border.all(color: Colors.orange.withAlpha(51)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withValues(alpha: 0.2),
+                      color: Colors.orange.withAlpha(51),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.local_fire_department, color: Colors.orange, size: 24),
@@ -486,17 +479,17 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.green.withValues(alpha: 0.1), Colors.teal.withValues(alpha: 0.05)],
+                  colors: [Colors.green.withAlpha(25), Colors.teal.withAlpha(13)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
+                border: Border.all(color: Colors.green.withAlpha(51)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.green.withValues(alpha: 0.2),
+                      color: Colors.green.withAlpha(51),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.celebration, color: Colors.green, size: 24),
@@ -597,10 +590,10 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: color.withAlpha(51)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withAlpha(13),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -612,7 +605,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withAlpha(25),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -643,10 +636,10 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: certification.categoryColor.withValues(alpha: 0.2)),
+          border: Border.all(color: certification.categoryColor.withAlpha(51)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: Colors.black.withAlpha(13),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -658,7 +651,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: certification.categoryColor.withValues(alpha: 0.1),
+                color: certification.categoryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -718,7 +711,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
   void _showSearchDialog() {
     showSearch(
       context: context,
-      delegate: CommunitySearchDelegate(_communityService),
+      delegate: CommunitySearchDelegate(),
     );
   }
 
@@ -767,7 +760,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+          color: Theme.of(context).primaryColor.withAlpha(25),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: Theme.of(context).primaryColor),
@@ -782,57 +775,20 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
   }
 
   void _navigateToCreatePost({String? postType}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('게시글 작성 기능을 준비중입니다.'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    PopupUtils.showInfo(context: context, title: '알림', message: '게시글 작성 기능을 준비중입니다.');
   }
 
   void _navigateToCreateStudyGroup() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('스터디 그룹 생성 기능을 준비중입니다.'),
-        backgroundColor: Colors.orange,
-      ),
-    );
-  }
-
-  void _navigateToPostDetail(CommunityPost post) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CommunityPostDetailScreen(post: post),
-      ),
-    );
-  }
-
-  void _navigateToStudyGroupDetail(StudyGroup group) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => StudyGroupScreen(group: group),
-      ),
-    );
+    PopupUtils.showInfo(context: context, title: '알림', message: '스터디 그룹 생성 기능을 준비중입니다.');
   }
 
   void _navigateToCertificationBoard(Certification certification) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${certification.jmNm} 게시판 기능을 준비중입니다.'),
-        backgroundColor: Colors.orange,
-      ),
-    );
+    PopupUtils.showInfo(context: context, title: '알림', message: '${certification.jmNm} 게시판 기능을 준비중입니다.');
   }
 }
 
 // 검색 델리게이트
 class CommunitySearchDelegate extends SearchDelegate<String> {
-  final CommunityService _communityService;
-
-  CommunitySearchDelegate(this._communityService);
-
   @override
   List<Widget> buildActions(BuildContext context) {
     return [

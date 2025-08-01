@@ -188,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   .update({'force_password_change': false})
                   .eq('id', userId);
 
-              Navigator.of(context).pop();
+              Navigator.of(context, rootNavigator: true).pop();
               if (mounted) {
                 await PopupUtils.showSuccess(
                   context: context,

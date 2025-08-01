@@ -70,13 +70,15 @@ class _MySpecScreenState extends State<MySpecScreen>
       if (confirmed == true) {
         _userService.removeTarget(certification.jmCd);
         _refreshData();
-        PopupUtils.showInfo(
-          context: context,
-          title: '목표 제거 완료',
-          message: '${certification.jmNm} 목표가 제거되었습니다.',
-          color: Colors.grey,
-          icon: Icons.remove_circle_outline,
-        );
+        if (mounted) {
+          PopupUtils.showInfo(
+            context: context,
+            title: '목표 제거 완료',
+            message: '${certification.jmNm} 목표가 제거되었습니다.',
+            color: Colors.grey,
+            icon: Icons.remove_circle_outline,
+          );
+        }
       }
     });
   }
@@ -93,11 +95,13 @@ class _MySpecScreenState extends State<MySpecScreen>
       if (confirmed == true) {
         _userService.addOwned(certification);
         _refreshData();
-        PopupUtils.showSuccess(
-          context: context,
-          title: '🎉 축하합니다!',
-          message: '${certification.jmNm} 취득을 기록했습니다! 정말 대단해요!',
-        );
+        if (mounted) {
+          PopupUtils.showSuccess(
+            context: context,
+            title: '🎉 축하합니다!',
+            message: '${certification.jmNm} 취득을 기록했습니다! 정말 대단해요!',
+          );
+        }
       }
     });
   }
@@ -112,11 +116,13 @@ class _MySpecScreenState extends State<MySpecScreen>
       if (selectedDate != null && mounted) {
         _userService.addTarget(certification, selectedDate);
         _refreshData();
-        PopupUtils.showSuccess(
-          context: context,
-          title: '목표 날짜 수정 완료',
-          message: '목표 날짜가 성공적으로 수정되었습니다.',
-        );
+        if (mounted) {
+          PopupUtils.showSuccess(
+            context: context,
+            title: '목표 날짜 수정 완료',
+            message: '목표 날짜가 성공적으로 수정되었습니다.',
+          );
+        }
       }
     });
   }
@@ -972,11 +978,13 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
         _userService.addTarget(certification, selectedDate);
         Navigator.pop(context);
         widget.onTargetAdded();
-        PopupUtils.showSuccess(
-          context: context,
-          title: '목표 추가 완료!',
-          message: '${certification.jmNm} 목표가 추가되었습니다! 🎯',
-        );
+        if (mounted) {
+          PopupUtils.showSuccess(
+            context: context,
+            title: '목표 추가 완료!',
+            message: '${certification.jmNm} 목표가 추가되었습니다! 🎯',
+          );
+        }
       }
     });
   }

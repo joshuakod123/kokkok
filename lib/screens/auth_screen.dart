@@ -176,7 +176,7 @@ class _AuthScreenState extends State<AuthScreen> {
     required String label,
     required TextEditingController controller,
   }) {
-    return PopupUtils.showCustom(
+    return PopupUtils.showCustom<bool>(
       context: context,
       title: title,
       titleIcon: Icons.lock_reset,

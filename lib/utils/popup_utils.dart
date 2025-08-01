@@ -19,7 +19,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
+                color: Colors.green.withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: const Icon(
@@ -80,7 +80,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
+                color: Colors.red.withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: const Icon(
@@ -146,7 +146,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: displayColor.withValues(alpha: 0.1),
+                color: displayColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(
@@ -207,7 +207,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.orange.withValues(alpha: 0.1),
+                color: Colors.orange.withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: const Icon(
@@ -270,7 +270,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (confirmColor ?? Colors.blue).withValues(alpha: 0.1),
+                color: (confirmColor ?? Colors.blue).withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(
@@ -323,7 +323,7 @@ class PopupUtils {
     );
   }
 
-  static Future<void> showCustom({
+  static Future<T?> showCustom<T>({
     required BuildContext context,
     required String title,
     required Widget content,
@@ -332,7 +332,7 @@ class PopupUtils {
     IconData? titleIcon,
     bool barrierDismissible = true,
   }) async {
-    return showDialog(
+    return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
       builder: (dialogContext) => AlertDialog(
@@ -343,7 +343,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (titleColor ?? Colors.blue).withValues(alpha: 0.1),
+                color: (titleColor ?? Colors.blue).withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(
@@ -398,7 +398,7 @@ class PopupUtils {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: (actionColor ?? Colors.blue).withValues(alpha: 0.1),
+                color: (actionColor ?? Colors.blue).withAlpha(25),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Icon(

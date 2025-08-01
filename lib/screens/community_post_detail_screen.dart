@@ -1,7 +1,7 @@
 // lib/screens/community_post_detail_screen.dart
 import 'package:flutter/material.dart';
 import '../models/community_models.dart';
-import '../services/community_service.dart';
+import '../utils/popup_utils.dart';
 
 class CommunityPostDetailScreen extends StatefulWidget {
   final CommunityPost post;
@@ -13,7 +13,6 @@ class CommunityPostDetailScreen extends StatefulWidget {
 }
 
 class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
-  final _communityService = CommunityService();
   final _commentController = TextEditingController();
 
   List<CommunityComment> _comments = [];
@@ -49,9 +48,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('댓글 로드 실패: $e')),
-        );
+        PopupUtils.showError(context: context, title: '오류', message: '댓글 로드 실패: $e');
       }
     }
   }
@@ -68,18 +65,11 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
       _commentController.clear();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('댓글 기능을 준비중입니다'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        PopupUtils.showInfo(context: context, title: '알림', message: '댓글 기능을 준비중입니다.');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('댓글 작성 실패: $e')),
-        );
+        PopupUtils.showError(context: context, title: '오류', message: '댓글 작성 실패: $e');
       }
     } finally {
       if (mounted) {
@@ -99,13 +89,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('좋아요 기능을 준비중입니다'),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 1),
-      ),
-    );
+    PopupUtils.showInfo(context: context, title: '알림', message: '좋아요 기능을 준비중입니다.');
   }
 
   @override
@@ -121,12 +105,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('공유 기능을 준비중입니다'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
+              PopupUtils.showInfo(context: context, title: '알림', message: '공유 기능을 준비중입니다.');
             },
           ),
           PopupMenuButton<String>(
@@ -134,20 +113,10 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
             onSelected: (value) {
               switch (value) {
                 case 'report':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('신고 기능을 준비중입니다'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
+                  PopupUtils.showInfo(context: context, title: '알림', message: '신고 기능을 준비중입니다.');
                   break;
                 case 'bookmark':
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('북마크 기능을 준비중입니다'),
-                      backgroundColor: Colors.orange,
-                    ),
-                  );
+                  PopupUtils.showInfo(context: context, title: '알림', message: '북마크 기능을 준비중입니다.');
                   break;
               }
             },
@@ -196,7 +165,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: widget.post.postTypeColor.withValues(alpha: 0.1),
+                                color: widget.post.postTypeColor.withAlpha(25),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Row(
@@ -221,7 +190,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  color: Colors.orange.withAlpha(25),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Row(
@@ -244,7 +213,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withValues(alpha: 0.1),
+                                  color: Colors.green.withAlpha(25),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                                 child: const Row(
@@ -284,7 +253,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                           children: [
                             CircleAvatar(
                               radius: 20,
-                              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                              backgroundColor: Theme.of(context).primaryColor.withAlpha(25),
                               child: Text(
                                 widget.post.author?.username.substring(0, 1) ?? '?',
                                 style: TextStyle(
@@ -319,7 +288,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.1),
+                                color: Colors.grey.withAlpha(25),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -343,7 +312,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.grey.withValues(alpha: 0.05),
+                            color: Colors.grey.withAlpha(13),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -365,7 +334,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             children: widget.post.tags.map((tag) => Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.1),
+                                color: Colors.blue.withAlpha(25),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -389,8 +358,8 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                 decoration: BoxDecoration(
                                   color: _isLiked
-                                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-                                      : Colors.grey.withValues(alpha: 0.1),
+                                      ? Theme.of(context).primaryColor.withAlpha(25)
+                                      : Colors.grey.withAlpha(25),
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
                                     color: _isLiked
@@ -427,7 +396,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.grey.withValues(alpha: 0.1),
+                                color: Colors.grey.withAlpha(25),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Row(
@@ -504,7 +473,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: Colors.orange.withValues(alpha: 0.1),
+                                      color: Colors.orange.withAlpha(25),
                                       borderRadius: BorderRadius.circular(50),
                                     ),
                                     child: const Icon(
@@ -560,7 +529,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                 children: [
                   CircleAvatar(
                     radius: 16,
-                    backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    backgroundColor: Theme.of(context).primaryColor.withAlpha(25),
                     child: Icon(
                       Icons.person,
                       size: 18,
@@ -632,7 +601,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+          bottom: BorderSide(color: Colors.grey.withAlpha(25)),
         ),
       ),
       child: Row(
@@ -641,8 +610,8 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
           CircleAvatar(
             radius: 16,
             backgroundColor: comment.isBestAnswer
-                ? Colors.orange.withValues(alpha: 0.1)
-                : Colors.grey.withValues(alpha: 0.1),
+                ? Colors.orange.withAlpha(25)
+                : Colors.grey.withAlpha(25),
             child: Text(
               comment.author?.username.substring(0, 1) ?? '?',
               style: TextStyle(
@@ -671,7 +640,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withValues(alpha: 0.1),
+                          color: Colors.blue.withAlpha(25),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -687,7 +656,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                         decoration: BoxDecoration(
-                          color: Colors.orange.withValues(alpha: 0.1),
+                          color: Colors.orange.withAlpha(25),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
@@ -723,18 +692,12 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                   children: [
                     GestureDetector(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('좋아요 기능을 준비중입니다'),
-                            backgroundColor: Colors.orange,
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
+                        PopupUtils.showInfo(context: context, title: '알림', message: '좋아요 기능을 준비중입니다.');
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Colors.grey.withAlpha(25),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -760,18 +723,12 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                     const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('답글 기능을 준비중입니다'),
-                            backgroundColor: Colors.orange,
-                            duration: Duration(seconds: 1),
-                          ),
-                        );
+                        PopupUtils.showInfo(context: context, title: '알림', message: '답글 기능을 준비중입니다.');
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
+                          color: Colors.grey.withAlpha(25),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(

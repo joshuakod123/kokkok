@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/certification.dart';
 import '../services/certification_api_service.dart';
 import '../services/user_certification_service.dart';
+import '../utils/popup_utils.dart';
 import '../widgets/d_day_card.dart';
 import '../widgets/recommendation_card.dart';
 import '../widgets/trending_card.dart';
@@ -176,7 +177,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                                   gradient: LinearGradient(
                                     colors: [
                                       Theme.of(context).primaryColor,
-                                      Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                                      Theme.of(context).primaryColor.withAlpha(204),
                                     ],
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -384,7 +385,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         gradient: LinearGradient(
           colors: [
             Theme.of(context).primaryColor,
-            Theme.of(context).primaryColor.withValues(alpha: 0.85),
+            Theme.of(context).primaryColor.withAlpha(217),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -392,7 +393,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
+            color: Theme.of(context).primaryColor.withAlpha(64),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -407,7 +408,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withAlpha(51),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -451,10 +452,10 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: Colors.white.withAlpha(38),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withAlpha(51),
                 width: 1,
               ),
             ),
@@ -489,7 +490,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
                 gradient: LinearGradient(
                   colors: [
                     Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                    Theme.of(context).primaryColor.withAlpha(204),
                   ],
                 ),
                 onTap: _showAddTargetDialog,
@@ -545,7 +546,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
+              color: Colors.black.withAlpha(25),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -556,7 +557,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withAlpha(51),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Icon(
@@ -579,7 +580,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withAlpha(204),
               ),
             ),
           ],
@@ -594,7 +595,7 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+            color: Theme.of(context).primaryColor.withAlpha(25),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
@@ -632,19 +633,14 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   }
 
   void _showAddTargetDialog() {
-    // 간단한 알림만 표시
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('목표 추가 기능은 나의 스펙 탭에서 이용하실 수 있습니다.'),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        action: SnackBarAction(
-          label: '이동',
-          onPressed: () {
-            widget.onNavigateToTab?.call(3);
-          },
-        ),
-      ),
+    PopupUtils.showInfo(
+      context: context,
+      title: '알림',
+      message: '목표 추가 기능은 나의 스펙 탭에서 이용하실 수 있습니다.',
+      buttonText: '이동',
+      onPressed: () {
+        widget.onNavigateToTab?.call(3);
+      },
     );
   }
 }
