@@ -45,18 +45,13 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
     setState(() => _isLoading = true);
 
     try {
-      final futures = await Future.wait([
-        _communityService.getTrendingPosts(days: 7, limit: 10),
-        _communityService.getSuccessStories(limit: 10),
-        _communityService.getStudyGroups(status: 'recruiting', limit: 10),
-        _certificationService.getPopularCertifications(),
-      ]);
+      // 커뮤니티 서비스가 완전히 구현되지 않았으므로 더미 데이터 사용
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      final popularCerts = await _certificationService.getPopularCertifications();
 
       setState(() {
-        _trendingPosts = futures[0] as List<CommunityPost>;
-        _successStories = futures[1] as List<CommunityPost>;
-        _activeStudyGroups = futures[2] as List<StudyGroup>;
-        _popularCertifications = futures[3] as List<Certification>;
+        _popularCertifications = popularCerts;
         _isLoading = false;
       });
     } catch (e) {
@@ -93,7 +88,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).primaryColor.withOpacity(0.1),
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         Colors.white,
                       ],
                       begin: Alignment.topCenter,
@@ -108,7 +103,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                         child: Icon(
                           Icons.people,
                           size: 100,
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         ),
                       ),
                       const Positioned(
@@ -265,23 +260,57 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
 
           const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-          // 최근 게시글들
+          // 커뮤니티 준비 중 메시지
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildSectionHeader('최근 게시글', '방금 올라온 따끈따끈한 글들'),
-            ),
-          ),
-
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index < _trendingPosts.length) {
-                  return _buildPostCard(_trendingPosts[index]);
-                }
-                return null;
-              },
-              childCount: _trendingPosts.length,
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(50),
+                    ),
+                    child: Icon(
+                      Icons.construction,
+                      size: 48,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '커뮤니티 준비중',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '더 나은 커뮤니티 경험을 위해 열심히 준비하고 있어요.\n조금만 기다려주세요!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -302,17 +331,17 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.orange.withOpacity(0.1), Colors.red.withOpacity(0.05)],
+                  colors: [Colors.orange.withValues(alpha: 0.1), Colors.red.withValues(alpha: 0.05)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.orange.withOpacity(0.2)),
+                border: Border.all(color: Colors.orange.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.2),
+                      color: Colors.orange.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.local_fire_department, color: Colors.orange, size: 24),
@@ -332,7 +361,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '가장 많은 관심을 받고 있는 글들',
+                          '인기 게시글 기능을 준비중입니다',
                           style: TextStyle(color: Colors.black54, fontSize: 14),
                         ),
                       ],
@@ -343,19 +372,38 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             ),
           ),
 
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index < _trendingPosts.length) {
-                  return _buildTrendingPostCard(_trendingPosts[index], index + 1);
-                }
-                return null;
-              },
-              childCount: _trendingPosts.length,
+          // 준비중 메시지
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '인기 게시글 기능 준비중',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '곧 만나볼 수 있어요!',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -372,7 +420,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionHeader('모집 중인 스터디', '함께 공부할 동료를 찾아보세요'),
+                  _buildSectionHeader('스터디 그룹', '함께 공부할 동료를 찾아보세요'),
                   const SizedBox(height: 8),
                   ElevatedButton.icon(
                     onPressed: () => _navigateToCreateStudyGroup(),
@@ -390,19 +438,38 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             ),
           ),
 
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index < _activeStudyGroups.length) {
-                  return _buildStudyGroupCard(_activeStudyGroups[index]);
-                }
-                return null;
-              },
-              childCount: _activeStudyGroups.length,
+          // 준비중 메시지
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.group_add,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '스터디 그룹 기능 준비중',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '더 나은 스터디 경험을 준비중이에요',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -419,17 +486,17 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.green.withOpacity(0.1), Colors.teal.withOpacity(0.05)],
+                  colors: [Colors.green.withValues(alpha: 0.1), Colors.teal.withValues(alpha: 0.05)],
                 ),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.green.withOpacity(0.2)),
+                border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                      color: Colors.green.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(Icons.celebration, color: Colors.green, size: 24),
@@ -449,7 +516,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
                         ),
                         SizedBox(height: 4),
                         Text(
-                          '성공한 선배들의 생생한 경험담',
+                          '합격 후기 기능을 준비중입니다',
                           style: TextStyle(color: Colors.black54, fontSize: 14),
                         ),
                       ],
@@ -460,19 +527,38 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             ),
           ),
 
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index < _successStories.length) {
-                  return _buildSuccessStoryCard(_successStories[index]);
-                }
-                return null;
-              },
-              childCount: _successStories.length,
+          // 준비중 메시지
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.celebration_outlined,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    '합격 후기 기능 준비중',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '선배들의 생생한 경험담을 준비중이에요',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -511,10 +597,10 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -526,7 +612,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 24),
@@ -557,10 +643,10 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: certification.categoryColor.withOpacity(0.2)),
+          border: Border.all(color: certification.categoryColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -572,7 +658,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: certification.categoryColor.withOpacity(0.1),
+                color: certification.categoryColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
@@ -609,550 +695,6 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildPostCard(CommunityPost post) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToPostDetail(post),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: post.postTypeColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(post.postTypeIcon, size: 12, color: post.postTypeColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          post.postTypeLabel,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: post.postTypeColor,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Spacer(),
-                  if (post.isPinned)
-                    const Icon(Icons.push_pin, size: 14, color: Colors.orange),
-                  if (post.isSolved && post.postType == 'question')
-                    const Icon(Icons.check_circle, size: 14, color: Colors.green),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                post.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                post.content,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                  height: 1.4,
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                    child: Text(
-                      post.author?.username.substring(0, 1) ?? '?',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.author?.username ?? '익명',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          post.timeAgo,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildPostStats(post),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTrendingPostCard(CommunityPost post, int rank) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: rank <= 3 ? Border.all(color: Colors.orange, width: 2) : null,
-        boxShadow: [
-          BoxShadow(
-            color: rank <= 3 ? Colors.orange.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToPostDetail(post),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: rank <= 3 ? Colors.orange : Colors.grey,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Center(
-                  child: Text(
-                    rank.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: post.postTypeColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            post.postTypeLabel,
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: post.postTypeColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (rank <= 3)
-                          const Icon(Icons.local_fire_department,
-                              color: Colors.orange, size: 16),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      post.title,
-                      style: const TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          post.author?.username ?? '익명',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          post.timeAgo,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              _buildPostStats(post),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStudyGroupCard(StudyGroup group) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToStudyGroupDetail(group),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: group.statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(group.studyMethodIcon,
-                        color: group.statusColor, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          group.name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          group.certificationName ?? '',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: group.statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      group.statusLabel,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: group.statusColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                group.description,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                  height: 1.4,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Icon(Icons.people, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${group.currentMembers}/${group.maxMembers}명',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  if (group.targetDate != null) ...[
-                    Icon(Icons.schedule, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 4),
-                    Text(
-                      'D-${group.daysUntilTarget ?? 0}',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                  const Spacer(),
-                  if (group.isRecruiting)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Text(
-                        '참여 가능',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSuccessStoryCard(CommunityPost post) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.green.withOpacity(0.05), Colors.white],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.green.withOpacity(0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: InkWell(
-        onTap: () => _navigateToPostDetail(post),
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.celebration, color: Colors.green, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    '🎉 합격 후기',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (post.certificationName != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        post.certificationName!,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Colors.blue,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                post.title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                post.content,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[700],
-                  height: 1.4,
-                ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Colors.green.withOpacity(0.1),
-                    child: Text(
-                      post.author?.username.substring(0, 1) ?? '?',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.author?.username ?? '익명',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Text(
-                          post.timeAgo,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  _buildPostStats(post),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPostStats(CommunityPost post) {
-    return Row(
-      children: [
-        Row(
-          children: [
-            Icon(Icons.thumb_up_outlined, size: 14, color: Colors.grey[600]),
-            const SizedBox(width: 4),
-            Text(
-              post.totalVotes.toString(),
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        const SizedBox(width: 12),
-        Row(
-          children: [
-            Icon(Icons.comment_outlined, size: 14, color: Colors.grey[600]),
-            const SizedBox(width: 4),
-            Text(
-              post.commentCount.toString(),
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-        const SizedBox(width: 12),
-        Row(
-          children: [
-            Icon(Icons.visibility_outlined, size: 14, color: Colors.grey[600]),
-            const SizedBox(width: 4),
-            Text(
-              post.viewCount.toString(),
-              style: TextStyle(fontSize: 11, color: Colors.grey[600]),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -1225,7 +767,7 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: Theme.of(context).primaryColor),
@@ -1240,18 +782,20 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
   }
 
   void _navigateToCreatePost({String? postType}) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CreatePostScreen(initialPostType: postType),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('게시글 작성 기능을 준비중입니다.'),
+        backgroundColor: Colors.orange,
       ),
-    ).then((_) => _loadData());
+    );
   }
 
   void _navigateToCreateStudyGroup() {
-    // TODO: 스터디 그룹 생성 화면으로 이동
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('스터디 그룹 생성 기능을 준비중입니다.')),
+      const SnackBar(
+        content: Text('스터디 그룹 생성 기능을 준비중입니다.'),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 
@@ -1274,9 +818,11 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
   }
 
   void _navigateToCertificationBoard(Certification certification) {
-    // TODO: 자격증별 게시판으로 이동
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${certification.jmNm} 게시판으로 이동')),
+      SnackBar(
+        content: Text('${certification.jmNm} 게시판 기능을 준비중입니다.'),
+        backgroundColor: Colors.orange,
+      ),
     );
   }
 }
@@ -1309,39 +855,20 @@ class CommunitySearchDelegate extends SearchDelegate<String> {
   Widget buildResults(BuildContext context) {
     if (query.isEmpty) return const SizedBox();
 
-    return FutureBuilder<List<CommunityPost>>(
-      future: _communityService.searchPosts(query: query),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const Center(
-            child: Text('검색 결과가 없습니다.'),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: snapshot.data!.length,
-          itemBuilder: (context, index) {
-            final post = snapshot.data![index];
-            return ListTile(
-              title: Text(post.title),
-              subtitle: Text(post.content, maxLines: 2, overflow: TextOverflow.ellipsis),
-              onTap: () {
-                close(context, post.title);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CommunityPostDetailScreen(post: post),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off, size: 64, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            '검색 기능 준비중',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 8),
+          Text('더 나은 검색 경험을 준비하고 있어요'),
+        ],
+      ),
     );
   }
 

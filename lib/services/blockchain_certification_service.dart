@@ -1,7 +1,6 @@
 // lib/services/blockchain_certification_service.dart
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/certification.dart';
 
 // 블록체인 자격증 데이터 모델
 class BlockchainCertification {
@@ -104,8 +103,6 @@ class BlockchainCertificationService {
           'certificationId': certificationId,
         },
       );
-
-      return transactionHash;
 
       // 4. 데이터베이스에 기록
       await _supabase
@@ -351,16 +348,6 @@ class BlockchainCertificationService {
     // 실제 구현: Pinata, Infura, 또는 자체 IPFS 노드 사용
     // 예시: Pinata API 사용
     try {
-      // final response = await http.post(
-      //   Uri.parse('https://api.pinata.cloud/pinning/pinJSONToIPFS'),
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'pinata_api_key': 'YOUR_API_KEY',
-      //     'pinata_secret_api_key': 'YOUR_SECRET_KEY',
-      //   },
-      //   body: jsonEncode(metadata),
-      // );
-
       // 현재는 모의 해시 반환
       return 'Qm${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}';
     } catch (e) {
@@ -375,24 +362,6 @@ class BlockchainCertificationService {
   }) async {
     // 실제 구현: web3dart 사용하여 스마트 컨트랙트 호출
     try {
-      // 스마트 컨트랙트 ABI와 주소 필요
-      // final contract = DeployedContract(
-      //   ContractAbi.fromJson(contractABI),
-      //   EthereumAddress.fromHex(contractAddress),
-      // );
-
-      // final function = contract.function('mintCertification');
-      // final transaction = Transaction.callContract(
-      //   contract: contract,
-      //   function: function,
-      //   parameters: [
-      //     EthereumAddress.fromHex(userAddress),
-      //     tokenURI,
-      //     certificateData['certificateNumber'],
-      //     BigInt.from(certificateData['issuedDate']),
-      //   ],
-      // );
-
       // 현재는 모의 트랜잭션 해시 반환
       return '0x${DateTime.now().millisecondsSinceEpoch.toRadixString(16)}';
     } catch (e) {
@@ -449,8 +418,6 @@ class BlockchainCertificationService {
   Future<bool> _verifyMetadataIntegrity(String ipfsHash, Map<String, dynamic> storedMetadata) async {
     try {
       // IPFS에서 실제 메타데이터 다운로드하여 비교
-      // final ipfsMetadata = await _downloadFromIPFS(ipfsHash);
-      // return _compareMetadata(ipfsMetadata, storedMetadata);
       return true; // 임시로 true 반환
     } catch (e) {
       return false;

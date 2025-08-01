@@ -19,10 +19,13 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
   List<CommunityComment> _comments = [];
   bool _isLoading = true;
   bool _isCommenting = false;
+  bool _isLiked = false;
+  int _likeCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _likeCount = widget.post.totalVotes;
     _loadComments();
   }
 
@@ -34,10 +37,12 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
 
   Future<void> _loadComments() async {
     try {
-      final comments = await _communityService.getComments(widget.post.id);
+      // 실제 구현에서는 커뮤니티 서비스 사용
+      await Future.delayed(const Duration(milliseconds: 500)); // 시뮬레이션
+
       if (mounted) {
         setState(() {
-          _comments = comments;
+          _comments = []; // 더미 데이터 - 실제로는 서비스에서 가져옴
           _isLoading = false;
         });
       }
@@ -57,17 +62,17 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
     setState(() => _isCommenting = true);
 
     try {
-      await _communityService.createComment(
-        postId: widget.post.id,
-        content: _commentController.text.trim(),
-      );
+      // 실제 구현에서는 커뮤니티 서비스 사용
+      await Future.delayed(const Duration(seconds: 1)); // 시뮬레이션
 
       _commentController.clear();
-      await _loadComments();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('댓글이 작성되었습니다')),
+          const SnackBar(
+            content: Text('댓글 기능을 준비중입니다'),
+            backgroundColor: Colors.orange,
+          ),
         );
       }
     } catch (e) {
@@ -83,6 +88,26 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
     }
   }
 
+  void _toggleLike() {
+    setState(() {
+      if (_isLiked) {
+        _isLiked = false;
+        _likeCount--;
+      } else {
+        _isLiked = true;
+        _likeCount++;
+      }
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('좋아요 기능을 준비중입니다'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,14 +121,58 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
           IconButton(
             icon: const Icon(Icons.share),
             onPressed: () {
-              // 공유 기능
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('공유 기능을 준비중입니다'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
             },
           ),
-          IconButton(
+          PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // 더보기 메뉴
+            onSelected: (value) {
+              switch (value) {
+                case 'report':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('신고 기능을 준비중입니다'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  break;
+                case 'bookmark':
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('북마크 기능을 준비중입니다'),
+                      backgroundColor: Colors.orange,
+                    ),
+                  );
+                  break;
+              }
             },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'bookmark',
+                child: Row(
+                  children: [
+                    Icon(Icons.bookmark_border, size: 20),
+                    SizedBox(width: 12),
+                    Text('북마크'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'report',
+                child: Row(
+                  children: [
+                    Icon(Icons.flag_outlined, size: 20, color: Colors.red),
+                    SizedBox(width: 12),
+                    Text('신고', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -149,7 +218,51 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             ),
                             const Spacer(),
                             if (widget.post.isPinned)
-                              const Icon(Icons.push_pin, size: 16, color: Colors.orange),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.push_pin, size: 12, color: Colors.orange),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      '고정',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.orange,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (widget.post.isSolved && widget.post.postType == 'question')
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.check_circle, size: 12, color: Colors.green),
+                                    SizedBox(width: 2),
+                                    Text(
+                                      '해결됨',
+                                      style: TextStyle(
+                                        fontSize: 8,
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 16),
@@ -161,6 +274,7 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
+                            height: 1.3,
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -202,33 +316,49 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                                 ],
                               ),
                             ),
-                            Row(
-                              children: [
-                                Icon(Icons.visibility, size: 16, color: Colors.grey[600]),
-                                const SizedBox(width: 4),
-                                Text(
-                                  widget.post.viewCount.toString(),
-                                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                                ),
-                              ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.visibility, size: 14, color: Colors.grey[600]),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    widget.post.viewCount.toString(),
+                                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 24),
 
                         // 내용
-                        Text(
-                          widget.post.content,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            height: 1.6,
-                            color: Colors.black87,
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            widget.post.content,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.6,
+                              color: Colors.black87,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 24),
 
                         // 태그들
-                        if (widget.post.tags.isNotEmpty)
+                        if (widget.post.tags.isNotEmpty) ...[
                           Wrap(
                             spacing: 8,
                             runSpacing: 8,
@@ -247,6 +377,89 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                               ),
                             )).toList(),
                           ),
+                          const SizedBox(height: 24),
+                        ],
+
+                        // 좋아요 및 댓글 버튼
+                        Row(
+                          children: [
+                            GestureDetector(
+                              onTap: _toggleLike,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: _isLiked
+                                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: _isLiked
+                                        ? Theme.of(context).primaryColor
+                                        : Colors.transparent,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _isLiked ? Icons.thumb_up : Icons.thumb_up_outlined,
+                                      size: 16,
+                                      color: _isLiked
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey[600],
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      _likeCount.toString(),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w500,
+                                        color: _isLiked
+                                            ? Theme.of(context).primaryColor
+                                            : Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.comment_outlined,
+                                    size: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    widget.post.commentCount.toString(),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${widget.post.timeAgo} 작성',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -261,12 +474,18 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.all(20),
-                          child: Text(
-                            '댓글 ${_comments.length}개',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.comment, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                '댓글 ${_comments.length}개',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         if (_isLoading)
@@ -277,10 +496,44 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                             ),
                           )
                         else if (_comments.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(20),
+                          Container(
+                            padding: const EdgeInsets.all(40),
                             child: Center(
-                              child: Text('첫 번째 댓글을 작성해보세요!'),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(50),
+                                    ),
+                                    child: const Icon(
+                                      Icons.construction,
+                                      size: 48,
+                                      color: Colors.orange,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    '댓글 기능 준비중',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '더 나은 댓글 시스템을 준비하고 있어요.\n조금만 기다려주세요!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           )
                         else
@@ -302,48 +555,71 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
               top: 12,
               bottom: MediaQuery.of(context).viewInsets.bottom + 12,
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    decoration: InputDecoration(
-                      hintText: '댓글을 입력하세요...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 16,
+                    backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    child: Icon(
+                      Icons.person,
+                      size: 18,
+                      color: Theme.of(context).primaryColor,
                     ),
-                    maxLines: null,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: IconButton(
-                    icon: _isCommenting
-                        ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextField(
+                      controller: _commentController,
+                      decoration: InputDecoration(
+                        hintText: '댓글을 입력하세요...',
+                        hintStyle: TextStyle(color: Colors.grey[500]),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey[100],
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                       ),
-                    )
-                        : const Icon(Icons.send, color: Colors.white),
-                    onPressed: _isCommenting ? null : _addComment,
+                      maxLines: null,
+                      maxLength: 500,
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) {
+                        return Text(
+                          '$currentLength/${maxLength ?? 0}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: IconButton(
+                      icon: _isCommenting
+                          ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                          : const Icon(Icons.send, color: Colors.white, size: 20),
+                      onPressed: _isCommenting ? null : _addComment,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -354,6 +630,11 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
   Widget _buildCommentTile(CommunityComment comment) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
+        ),
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -434,43 +715,71 @@ class _CommunityPostDetailScreenState extends State<CommunityPostDetailScreen> {
                   style: const TextStyle(
                     fontSize: 14,
                     height: 1.4,
+                    color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // 좋아요 기능
-                      },
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.thumb_up_outlined,
-                            size: 16,
-                            color: Colors.grey[600],
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('좋아요 기능을 준비중입니다'),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 1),
                           ),
-                          const SizedBox(width: 4),
-                          Text(
-                            comment.upvotes.toString(),
-                            style: TextStyle(
-                              fontSize: 12,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.thumb_up_outlined,
+                              size: 14,
                               color: Colors.grey[600],
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 4),
+                            Text(
+                              comment.upvotes.toString(),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     GestureDetector(
                       onTap: () {
-                        // 답글 기능
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('답글 기능을 준비중입니다'),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 1),
+                          ),
+                        );
                       },
-                      child: Text(
-                        '답글',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '답글',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
                     ),

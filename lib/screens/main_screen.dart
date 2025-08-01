@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // 추가
+import 'package:flutter/services.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'enhanced_home_screen.dart';
 import 'certification_browse_screen.dart';
@@ -101,9 +101,9 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     // 시스템 상태 바 스타일 설정 - 투명하게 만들기
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent, // 투명
-        statusBarIconBrightness: Brightness.dark, // 아이콘 색상
-        statusBarBrightness: Brightness.light, // iOS용
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
     );
 
@@ -130,9 +130,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   // 탭 변경 함수 - 다른 화면에서 호출 가능
   void _navigateToTab(int tabIndex) {
     if (_needsPasswordChange && tabIndex != 4) {
-      if (mounted) {
-        _showPasswordChangeNotification();
-      }
+      _showPasswordChangeNotification();
       return;
     }
 
@@ -143,6 +141,8 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   }
 
   void _showPasswordChangeNotification() {
+    if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Container(
@@ -193,50 +193,48 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           _tabController.animateTo(4);
 
           // 사용자에게 알림 표시
-          if (mounted) {
-            Future.delayed(const Duration(milliseconds: 500), () {
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: const Row(
-                        children: [
-                          Icon(Icons.security, color: Colors.white, size: 24),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '보안 알림',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  '안전을 위해 비밀번호를 변경해주세요.',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.security, color: Colors.white, size: 24),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '보안 알림',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 4),
+                            Text(
+                              '안전을 위해 비밀번호를 변경해주세요.',
+                              style: TextStyle(fontSize: 14),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    backgroundColor: Colors.orange,
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    margin: const EdgeInsets.all(16),
-                    duration: const Duration(seconds: 4),
+                    ],
                   ),
-                );
-              }
-            });
-          }
+                ),
+                backgroundColor: Colors.orange,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                margin: const EdgeInsets.all(16),
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          });
         } else {
           setState(() {
             _isCheckingPasswordStatus = false;
@@ -266,7 +264,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     if (_isCheckingPasswordStatus) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8F9FA),
-        // extendBodyBehindAppBar 추가하여 상태바까지 배경 확장
         extendBodyBehindAppBar: true,
         body: SafeArea(
           child: Center(
@@ -278,14 +275,14 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
-                        Theme.of(context).primaryColor.withOpacity(0.1),
-                        Theme.of(context).primaryColor.withOpacity(0.05),
+                        Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        Theme.of(context).primaryColor.withValues(alpha: 0.05),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(100),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         blurRadius: 20,
                         offset: const Offset(0, 10),
                       ),
@@ -323,7 +320,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     borderRadius: BorderRadius.circular(50),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 10,
                         offset: const Offset(0, 2),
                       ),
@@ -350,7 +347,6 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     }
 
     return Scaffold(
-      // 🔥 핵심: extendBodyBehindAppBar로 상태바까지 확장
       extendBodyBehindAppBar: true,
       backgroundColor: const Color(0xFFF8F9FA),
       body: TabBarView(
@@ -371,7 +367,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.08),
+                color: Colors.black.withValues(alpha: 0.08),
                 blurRadius: 20,
                 offset: const Offset(0, -8),
                 spreadRadius: 0,
@@ -392,7 +388,7 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
                     : LinearGradient(
                   colors: [
                     Theme.of(context).primaryColor,
-                    Theme.of(context).primaryColor.withOpacity(0.8),
+                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
                   ],
                 ),
                 gap: 10,

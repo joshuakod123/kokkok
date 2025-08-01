@@ -99,7 +99,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(  // context 이름 변경
+      builder: (dialogContext) => AlertDialog(
         title: const Text('비밀번호 변경'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -140,13 +140,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           if (!widget.needsPasswordChange)
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),  // dialogContext 사용
+              onPressed: () => Navigator.of(dialogContext).pop(),
               child: const Text('취소'),
             ),
           ElevatedButton(
             onPressed: () async {
               if (passwordController.text.trim().length < 6) {
-                _showErrorSnackBar('비밀번호는 6자 이상이어야 합니다.');
+                if (mounted) {
+                  _showErrorSnackBar('비밀번호는 6자 이상이어야 합니다.');
+                }
                 return;
               }
               try {
@@ -159,8 +161,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     .update({'force_password_change': false})
                     .eq('id', userId);
 
+                Navigator.of(dialogContext).pop();
                 if (mounted) {
-                  Navigator.of(dialogContext).pop();  // dialogContext 사용
                   _showSuccessSnackBar('비밀번호가 성공적으로 변경되었습니다.');
                   widget.onPasswordChanged();
                 }
@@ -183,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(  // context 이름 변경
+      builder: (dialogContext) => AlertDialog(
         title: const Text('프로필 수정'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -210,13 +212,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),  // dialogContext 사용
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('취소'),
           ),
           ElevatedButton(
             onPressed: () async {
               if (nameController.text.trim().isEmpty) {
-                _showErrorSnackBar('이름을 입력해주세요.');
+                if (mounted) {
+                  _showErrorSnackBar('이름을 입력해주세요.');
+                }
                 return;
               }
 
@@ -230,8 +234,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     'updated_at': DateTime.now().toIso8601String(),
                   });
 
+                  Navigator.of(dialogContext).pop();
                   if (mounted) {
-                    Navigator.of(dialogContext).pop();  // dialogContext 사용
                     _showSuccessSnackBar('프로필이 업데이트되었습니다.');
                     _loadUserProfile();
                   }
@@ -337,6 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
       backgroundColor: Theme.of(context).colorScheme.error,
@@ -344,6 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(message),
       backgroundColor: Colors.green,
@@ -477,7 +483,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: '알림 설정',
                   subtitle: 'D-Day 알림, 추천 알림 등을 설정해보세요',
                   onTap: () {
-                    // TODO: 알림 설정 화면으로 이동
                     _showSuccessSnackBar('알림 설정 기능을 준비중입니다.');
                   },
                 ),
