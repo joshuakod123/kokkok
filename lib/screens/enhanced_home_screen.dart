@@ -151,213 +151,212 @@ class _EnhancedHomeScreenState extends State<EnhancedHomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        color: Theme.of(context).primaryColor,
-        child: CustomScrollView(
-          slivers: [
-            // 커스텀 앱바
-            SliverAppBar(
-              expandedHeight: 160,
-              floating: false,
-              pinned: true,
-              elevation: 0,
-              backgroundColor: Colors.white,
-              flexibleSpace: FlexibleSpaceBar(
-                title: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Theme.of(context).primaryColor,
-                              Theme.of(context).primaryColor.withValues(alpha: 0.8),
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: _refreshData,
+          color: Theme.of(context).primaryColor,
+          child: CustomScrollView(
+            slivers: [
+              // 🔥 완벽한 정렬의 고정 헤더
+              SliverToBoxAdapter(
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Row(
+                      children: [
+                        // 왼쪽: 로고 + 앱 이름
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Theme.of(context).primaryColor,
+                                      Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Icon(
+                                  Icons.diamond,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                '콕콕',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
                             ],
                           ),
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
-                          Icons.diamond,
-                          color: Colors.white,
-                          size: 20,
+
+                        // 오른쪽: 알림 + 검색 버튼
+                        Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.notifications_none, color: Colors.black87, size: 20),
+                                onPressed: () {},
+                                padding: const EdgeInsets.all(8),
+                                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: const Icon(Icons.search, color: Colors.black87, size: 20),
+                                onPressed: () {
+                                  widget.onNavigateToTab?.call(1);
+                                },
+                                padding: const EdgeInsets.all(8),
+                                constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const Text(
-                        '콕콕',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                background: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Theme.of(context).primaryColor.withValues(alpha: 0.05),
-                        Colors.white,
                       ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
                     ),
                   ),
                 ),
               ),
-              actions: [
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+
+              SliverToBoxAdapter(
+                child: _isLoading
+                    ? const SizedBox(
+                  height: 400,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('데이터를 불러오는 중...',
+                            style: TextStyle(color: Colors.grey)),
+                      ],
                     ),
-                    child: const Icon(Icons.notifications_none, color: Colors.black87, size: 20),
                   ),
-                  onPressed: () {},
-                ),
-                IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+                )
+                    : FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 환영 메시지
+                        _buildWelcomeMessage(),
+                        const SizedBox(height: 24),
+
+                        // 빠른 액션 버튼들
+                        _buildQuickActions(),
+                        const SizedBox(height: 32),
+
+                        // D-Day 카드
+                        if (_nearestTarget != null) ...[
+                          _buildSectionHeader(
+                            '나의 다음 목표',
+                            '목표를 향해 달려가세요! 🎯',
+                            Icons.flag_outlined,
+                          ),
+                          const SizedBox(height: 16),
+                          DDayCard(
+                            certification: _nearestTarget!,
+                            onTap: () => _navigateToCertificationDetail(_nearestTarget!),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+
+                        // 맞춤 추천
+                        if (_recommendations.isNotEmpty) ...[
+                          _buildSectionHeader(
+                            '콕콕! 맞춤 추천',
+                            '${_userMajor ?? '당신'}에게 최적화된 자격증',
+                            Icons.recommend_outlined,
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 160,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.only(left: 4),
+                              itemCount: _recommendations.length,
+                              itemBuilder: (context, index) {
+                                return RecommendationCard(
+                                  certification: _recommendations[index],
+                                  onTap: () => _navigateToCertificationDetail(_recommendations[index]),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+
+                        // 인기 급상승
+                        if (_trending.isNotEmpty) ...[
+                          _buildSectionHeader(
+                            '지금 인기 급상승! 🔥',
+                            '많은 사람들이 도전하고 있어요',
+                            Icons.trending_up,
+                          ),
+                          const SizedBox(height: 16),
+                          SizedBox(
+                            height: 120,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding: const EdgeInsets.only(left: 4),
+                              itemCount: _trending.take(5).length,
+                              itemBuilder: (context, index) {
+                                return TrendingCard(
+                                  certification: _trending[index],
+                                  rank: index + 1,
+                                  onTap: () => _navigateToCertificationDetail(_trending[index]),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+
+                        // 최신 자격증 정보
+                        _buildSectionHeader(
+                          '최신 자격증 정보',
+                          '새롭게 추가된 자격증들을 확인해보세요',
+                          Icons.new_releases_outlined,
+                        ),
+                        const SizedBox(height: 16),
+                        ..._recentCertifications.map((cert) =>
+                            CertificationListTile(
+                              certification: cert,
+                              onTap: () => _navigateToCertificationDetail(cert),
+                            )
+                        ),
+
+                        const SizedBox(height: 120),
+                      ],
                     ),
-                    child: const Icon(Icons.search, color: Colors.black87, size: 20),
-                  ),
-                  onPressed: () {
-                    widget.onNavigateToTab?.call(1);
-                  },
-                ),
-                const SizedBox(width: 12),
-              ],
-            ),
-
-            SliverToBoxAdapter(
-              child: _isLoading
-                  ? const SizedBox(
-                height: 400,
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('데이터를 불러오는 중...',
-                          style: TextStyle(color: Colors.grey)),
-                    ],
-                  ),
-                ),
-              )
-                  : FadeTransition(
-                opacity: _fadeAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 환영 메시지
-                      _buildWelcomeMessage(),
-                      const SizedBox(height: 24),
-
-                      // 빠른 액션 버튼들
-                      _buildQuickActions(),
-                      const SizedBox(height: 32),
-
-                      // D-Day 카드
-                      if (_nearestTarget != null) ...[
-                        _buildSectionHeader(
-                          '나의 다음 목표',
-                          '목표를 향해 달려가세요! 🎯',
-                          Icons.flag_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        DDayCard(
-                          certification: _nearestTarget!,
-                          onTap: () => _navigateToCertificationDetail(_nearestTarget!),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-
-                      // 맞춤 추천
-                      if (_recommendations.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          '콕콕! 맞춤 추천',
-                          '${_userMajor ?? '당신'}에게 최적화된 자격증',
-                          Icons.recommend_outlined,
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 160,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.only(left: 4),
-                            itemCount: _recommendations.length,
-                            itemBuilder: (context, index) {
-                              return RecommendationCard(
-                                certification: _recommendations[index],
-                                onTap: () => _navigateToCertificationDetail(_recommendations[index]),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-
-                      // 인기 급상승
-                      if (_trending.isNotEmpty) ...[
-                        _buildSectionHeader(
-                          '지금 인기 급상승! 🔥',
-                          '많은 사람들이 도전하고 있어요',
-                          Icons.trending_up,
-                        ),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          height: 120,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            padding: const EdgeInsets.only(left: 4),
-                            itemCount: _trending.take(5).length,
-                            itemBuilder: (context, index) {
-                              return TrendingCard(
-                                certification: _trending[index],
-                                rank: index + 1,
-                                onTap: () => _navigateToCertificationDetail(_trending[index]),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                      ],
-
-                      // 최신 자격증 정보
-                      _buildSectionHeader(
-                        '최신 자격증 정보',
-                        '새롭게 추가된 자격증들을 확인해보세요',
-                        Icons.new_releases_outlined,
-                      ),
-                      const SizedBox(height: 16),
-                      ..._recentCertifications.map((cert) =>
-                          CertificationListTile(
-                            certification: cert,
-                            onTap: () => _navigateToCertificationDetail(cert),
-                          )
-                      ),
-
-                      const SizedBox(height: 120),
-                    ],
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

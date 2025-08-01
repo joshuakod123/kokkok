@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // 추가
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'enhanced_home_screen.dart';
 import 'certification_browse_screen.dart';
@@ -94,6 +95,15 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
       CurvedAnimation(
         parent: _navigationAnimationController,
         curve: Curves.easeInOut,
+      ),
+    );
+
+    // 시스템 상태 바 스타일 설정 - 투명하게 만들기
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent, // 투명
+        statusBarIconBrightness: Brightness.dark, // 아이콘 색상
+        statusBarBrightness: Brightness.light, // iOS용
       ),
     );
 
@@ -256,86 +266,93 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
     if (_isCheckingPasswordStatus) {
       return Scaffold(
         backgroundColor: const Color(0xFFF8F9FA),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Theme.of(context).primaryColor.withOpacity(0.1),
-                      Theme.of(context).primaryColor.withOpacity(0.05),
+        // extendBodyBehindAppBar 추가하여 상태바까지 배경 확장
+        extendBodyBehindAppBar: true,
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Theme.of(context).primaryColor.withOpacity(0.1),
+                        Theme.of(context).primaryColor.withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(100),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Theme.of(context).primaryColor.withOpacity(0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  child: Icon(
+                    Icons.diamond,
+                    size: 80,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
-                child: Icon(
-                  Icons.diamond,
-                  size: 80,
-                  color: Theme.of(context).primaryColor,
+                const SizedBox(height: 32),
+                Text(
+                  '콕콕',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                '콕콕',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                const SizedBox(height: 16),
+                Text(
+                  '자격증 관리의 새로운 기준',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                '자격증 관리의 새로운 기준',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(50),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).primaryColor,
+                    strokeWidth: 3,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(50),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                const SizedBox(height: 24),
+                Text(
+                  '사용자 정보를 확인하는 중...',
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                    fontSize: 14,
+                  ),
                 ),
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).primaryColor,
-                  strokeWidth: 3,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                '사용자 정보를 확인하는 중...',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 14,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
     }
 
     return Scaffold(
+      // 🔥 핵심: extendBodyBehindAppBar로 상태바까지 확장
+      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFF8F9FA),
       body: TabBarView(
         controller: _tabController,
         physics: _needsPasswordChange
