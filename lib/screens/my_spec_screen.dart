@@ -3,6 +3,7 @@ import '../models/certification.dart';
 import '../services/certification_api_service.dart';
 import '../services/user_certification_service.dart';
 import '../widgets/certification_list_tile.dart';
+import '../utils/popup_utils.dart';
 import 'certification_detail_screen.dart';
 
 class MySpecScreen extends StatefulWidget {
@@ -58,96 +59,47 @@ class _MySpecScreenState extends State<MySpecScreen>
   }
 
   void _removeTarget(Certification certification) {
-    showDialog(
+    PopupUtils.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('목표 제거', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: Text('${certification.jmNm} 목표를 제거하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('취소', style: TextStyle(color: Colors.grey[600])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _userService.removeTarget(certification.jmCd);
-              Navigator.pop(context);
-              _refreshData();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${certification.jmNm} 목표가 제거되었습니다'),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('제거'),
-          ),
-        ],
-      ),
-    );
+      title: '목표 제거 확인',
+      message: '${certification.jmNm} 목표를 제거하시겠습니까?',
+      confirmText: '제거',
+      confirmColor: Colors.red,
+      icon: Icons.delete_outline,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _userService.removeTarget(certification.jmCd);
+        _refreshData();
+        PopupUtils.showInfo(
+          context: context,
+          title: '목표 제거 완료',
+          message: '${certification.jmNm} 목표가 제거되었습니다.',
+          color: Colors.grey,
+          icon: Icons.remove_circle_outline,
+        );
+      }
+    });
   }
 
   void _markAsCompleted(Certification certification) {
-    showDialog(
+    PopupUtils.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
-          children: [
-            Icon(Icons.celebration, color: Colors.amber, size: 28),
-            SizedBox(width: 12),
-            Text('축하합니다!', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        content: Text('${certification.jmNm}을(를) 취득하셨나요?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('취소', style: TextStyle(color: Colors.grey[600])),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _userService.addOwned(certification);
-              Navigator.pop(context);
-              _refreshData();
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Row(
-                      children: [
-                        Icon(Icons.celebration, color: Colors.white),
-                        SizedBox(width: 12),
-                        Expanded(child: Text('축하합니다! 취득을 기록했습니다 🎉')),
-                      ],
-                    ),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            child: const Text('완료'),
-          ),
-        ],
-      ),
-    );
+      title: '🎉 축하합니다!',
+      message: '${certification.jmNm}을(를) 취득하셨나요?',
+      confirmText: '완료',
+      confirmColor: Colors.green,
+      icon: Icons.celebration,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _userService.addOwned(certification);
+        _refreshData();
+        PopupUtils.showSuccess(
+          context: context,
+          title: '🎉 축하합니다!',
+          message: '${certification.jmNm} 취득을 기록했습니다! 정말 대단해요!',
+        );
+      }
+    });
   }
 
   void _editTargetDate(Certification certification) {
@@ -160,12 +112,10 @@ class _MySpecScreenState extends State<MySpecScreen>
       if (selectedDate != null && mounted) {
         _userService.addTarget(certification, selectedDate);
         _refreshData();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('목표 날짜가 수정되었습니다'),
-            backgroundColor: Colors.blue,
-            behavior: SnackBarBehavior.floating,
-          ),
+        PopupUtils.showSuccess(
+          context: context,
+          title: '목표 날짜 수정 완료',
+          message: '목표 날짜가 성공적으로 수정되었습니다.',
         );
       }
     });
@@ -215,7 +165,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                               gradient: LinearGradient(
                                 colors: [
                                   Theme.of(context).primaryColor,
-                                  Theme.of(context).primaryColor.withAlpha(204), // 0.8 opacity
+                                  Theme.of(context).primaryColor.withAlpha(204),
                                 ],
                               ),
                               borderRadius: BorderRadius.circular(16),
@@ -370,15 +320,15 @@ class _MySpecScreenState extends State<MySpecScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Theme.of(context).primaryColor.withAlpha(25), // 0.1 opacity
-            Theme.of(context).primaryColor.withAlpha(13), // 0.05 opacity
+            Theme.of(context).primaryColor.withAlpha(25),
+            Theme.of(context).primaryColor.withAlpha(13),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).primaryColor.withAlpha(51), // 0.2 opacity
+          color: Theme.of(context).primaryColor.withAlpha(51),
         ),
       ),
       child: Row(
@@ -449,15 +399,15 @@ class _MySpecScreenState extends State<MySpecScreen>
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              color.withAlpha(25), // 0.1 opacity
-              color.withAlpha(13), // 0.05 opacity
+              color.withAlpha(25),
+              color.withAlpha(13),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withAlpha(51), // 0.2 opacity
+            color: color.withAlpha(51),
             width: 1,
           ),
         ),
@@ -527,17 +477,17 @@ class _MySpecScreenState extends State<MySpecScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isUrgent
-              ? Colors.red.withAlpha(77) // 0.3 opacity
+              ? Colors.red.withAlpha(77)
               : isPassed
-              ? Colors.grey.withAlpha(51) // 0.2 opacity
+              ? Colors.grey.withAlpha(51)
               : Colors.transparent,
           width: 2,
         ),
         boxShadow: [
           BoxShadow(
             color: isUrgent
-                ? Colors.red.withAlpha(25) // 0.1 opacity
-                : Colors.black.withAlpha(13), // 0.05 opacity
+                ? Colors.red.withAlpha(25)
+                : Colors.black.withAlpha(13),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -580,13 +530,13 @@ class _MySpecScreenState extends State<MySpecScreen>
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isPassed
-                          ? [Colors.grey.withAlpha(25), Colors.grey.withAlpha(13)] // 0.1, 0.05
+                          ? [Colors.grey.withAlpha(25), Colors.grey.withAlpha(13)]
                           : isUrgent
-                          ? [Colors.red.withAlpha(38), Colors.red.withAlpha(25)] // 0.15, 0.1
+                          ? [Colors.red.withAlpha(38), Colors.red.withAlpha(25)]
                           : [
                         Theme.of(context).primaryColor.withAlpha(38),
                         Theme.of(context).primaryColor.withAlpha(25)
-                      ], // 0.15, 0.1
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -622,7 +572,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.withAlpha(51)), // 0.2 opacity
+                  border: Border.all(color: Colors.grey.withAlpha(51)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -656,7 +606,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      side: BorderSide(color: Colors.grey.withAlpha(77)), // 0.3 opacity
+                      side: BorderSide(color: Colors.grey.withAlpha(77)),
                     ),
                     child: const Text('날짜수정', style: TextStyle(fontSize: 12)),
                   ),
@@ -682,7 +632,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                   onPressed: () => _removeTarget(certification),
                   icon: const Icon(Icons.delete_outline, color: Colors.red, size: 18),
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.red.withAlpha(25), // 0.1 opacity
+                    backgroundColor: Colors.red.withAlpha(25),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -728,17 +678,17 @@ class _MySpecScreenState extends State<MySpecScreen>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.amber.withAlpha(25), // 0.1
-            Colors.orange.withAlpha(13), // 0.05
+            Colors.amber.withAlpha(25),
+            Colors.orange.withAlpha(13),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber.withAlpha(77)), // 0.3
+        border: Border.all(color: Colors.amber.withAlpha(77)),
         boxShadow: [
           BoxShadow(
-            color: Colors.amber.withAlpha(25), // 0.1
+            color: Colors.amber.withAlpha(25),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -753,8 +703,8 @@ class _MySpecScreenState extends State<MySpecScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.amber.withAlpha(77), // 0.3
-                    Colors.amber.withAlpha(51), // 0.2
+                    Colors.amber.withAlpha(77),
+                    Colors.amber.withAlpha(51),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
@@ -794,7 +744,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green.withAlpha(38), // 0.15
+                      color: Colors.green.withAlpha(38),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Row(
@@ -823,7 +773,7 @@ class _MySpecScreenState extends State<MySpecScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.amber.withAlpha(51), // 0.2
+                color: Colors.amber.withAlpha(51),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
@@ -888,8 +838,8 @@ class _MySpecScreenState extends State<MySpecScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Theme.of(context).primaryColor.withAlpha(25), // 0.1
-                      Theme.of(context).primaryColor.withAlpha(13), // 0.05
+                      Theme.of(context).primaryColor.withAlpha(25),
+                      Theme.of(context).primaryColor.withAlpha(13),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(50),
@@ -897,7 +847,7 @@ class _MySpecScreenState extends State<MySpecScreen>
                 child: Icon(
                   icon,
                   size: 48,
-                  color: Theme.of(context).primaryColor.withAlpha(178), // 0.7
+                  color: Theme.of(context).primaryColor.withAlpha(178),
                 ),
               ),
               const SizedBox(height: 24),
@@ -1022,13 +972,10 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
         _userService.addTarget(certification, selectedDate);
         Navigator.pop(context);
         widget.onTargetAdded();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${certification.jmNm} 목표가 추가되었습니다!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        PopupUtils.showSuccess(
+          context: context,
+          title: '목표 추가 완료!',
+          message: '${certification.jmNm} 목표가 추가되었습니다! 🎯',
         );
       }
     });
@@ -1063,7 +1010,7 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withAlpha(25), // 0.1 opacity
+                    color: Theme.of(context).primaryColor.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
@@ -1104,7 +1051,7 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
               decoration: BoxDecoration(
                 color: Colors.grey[50],
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.withAlpha(51)), // 0.2 opacity
+                border: Border.all(color: Colors.grey.withAlpha(51)),
               ),
               child: TextField(
                 controller: _searchController,
@@ -1198,10 +1145,10 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withAlpha(38)), // 0.15 opacity
+        border: Border.all(color: Colors.grey.withAlpha(38)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(13), // 0.05 opacity
+            color: Colors.black.withAlpha(13),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -1215,7 +1162,7 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: cert.categoryColor.withAlpha(25), // 0.1 opacity
+                color: cert.categoryColor.withAlpha(25),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -1257,7 +1204,7 @@ class _AddTargetSheetState extends State<AddTargetSheet> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: cert.categoryColor.withAlpha(25), // 0.1 opacity
+                          color: cert.categoryColor.withAlpha(25),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/user_certification_service.dart';
+import '../utils/popup_utils.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -87,95 +88,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _signOut() async {
-    try {
-      await supabase.auth.signOut();
-    } on AuthException catch (error) {
-      if (mounted) _showErrorSnackBar(error.message);
+    final confirmed = await PopupUtils.showConfirmation(
+      context: context,
+      title: '로그아웃 확인',
+      message: '정말 로그아웃하시겠습니까?',
+      confirmText: '로그아웃',
+      confirmColor: Colors.red,
+      icon: Icons.logout,
+    );
+
+    if (confirmed == true) {
+      try {
+        await supabase.auth.signOut();
+      } on AuthException catch (error) {
+        if (mounted) {
+          await PopupUtils.showError(
+            context: context,
+            title: '로그아웃 실패',
+            message: error.message,
+          );
+        }
+      }
     }
   }
 
   void _changePassword() {
     final passwordController = TextEditingController();
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('비밀번호 변경'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.needsPasswordChange)
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '보안을 위해 비밀번호를 변경해주세요.',
-                        style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: '새 비밀번호 (6자 이상)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          if (!widget.needsPasswordChange)
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('취소'),
-            ),
-          ElevatedButton(
-            onPressed: () async {
-              if (passwordController.text.trim().length < 6) {
-                if (mounted) {
-                  _showErrorSnackBar('비밀번호는 6자 이상이어야 합니다.');
-                }
-                return;
-              }
-              try {
-                final userId = supabase.auth.currentUser!.id;
-                await supabase.auth.updateUser(
-                  UserAttributes(password: passwordController.text.trim()),
-                );
-                await supabase
-                    .from('profiles')
-                    .update({'force_password_change': false})
-                    .eq('id', userId);
 
-                Navigator.of(dialogContext).pop();
-                if (mounted) {
-                  _showSuccessSnackBar('비밀번호가 성공적으로 변경되었습니다.');
-                  widget.onPasswordChanged();
-                }
-              } on AuthException catch (error) {
-                if (mounted) {
-                  _showErrorSnackBar(error.message);
-                }
-              }
-            },
-            child: const Text('변경'),
+    PopupUtils.showCustom(
+      context: context,
+      title: '비밀번호 변경',
+      titleIcon: Icons.lock_outline,
+      titleColor: widget.needsPasswordChange ? Colors.orange : Colors.blue,
+      barrierDismissible: !widget.needsPasswordChange,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.needsPasswordChange)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '보안을 위해 비밀번호를 변경해주세요.',
+                      style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 16),
+          TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: '새 비밀번호 (6자 이상)',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.lock),
+            ),
+            autofocus: true,
           ),
         ],
       ),
+      actions: [
+        if (!widget.needsPasswordChange)
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text('취소', style: TextStyle(color: Colors.grey[600])),
+          ),
+        if (!widget.needsPasswordChange) const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () async {
+            if (passwordController.text.trim().length < 6) {
+              await PopupUtils.showError(
+                context: context,
+                title: '입력 오류',
+                message: '비밀번호는 6자 이상이어야 합니다.',
+              );
+              return;
+            }
+            try {
+              final userId = supabase.auth.currentUser!.id;
+              await supabase.auth.updateUser(
+                UserAttributes(password: passwordController.text.trim()),
+              );
+              await supabase
+                  .from('profiles')
+                  .update({'force_password_change': false})
+                  .eq('id', userId);
+
+              Navigator.of(context).pop();
+              if (mounted) {
+                await PopupUtils.showSuccess(
+                  context: context,
+                  title: '비밀번호 변경 완료',
+                  message: '비밀번호가 성공적으로 변경되었습니다.',
+                  onPressed: widget.onPasswordChanged,
+                );
+              }
+            } on AuthException catch (error) {
+              if (mounted) {
+                await PopupUtils.showError(
+                  context: context,
+                  title: '비밀번호 변경 실패',
+                  message: error.message,
+                );
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: widget.needsPasswordChange ? Colors.orange : Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: const Text('변경'),
+        ),
+      ],
     );
   }
 
@@ -183,73 +223,94 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final nameController = TextEditingController(text: username);
     final majorController = TextEditingController(text: major ?? '');
 
-    showDialog(
+    PopupUtils.showCustom(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('프로필 수정'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: '이름',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
-              ),
+      title: '프로필 수정',
+      titleIcon: Icons.edit,
+      titleColor: Colors.blue,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: nameController,
+            decoration: const InputDecoration(
+              labelText: '이름',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.person),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: majorController,
-              decoration: const InputDecoration(
-                labelText: '전공 (선택사항)',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.school),
-                hintText: '예: 컴퓨터공학과',
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('취소'),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              if (nameController.text.trim().isEmpty) {
-                if (mounted) {
-                  _showErrorSnackBar('이름을 입력해주세요.');
-                }
-                return;
-              }
-
-              try {
-                final user = supabase.auth.currentUser;
-                if (user != null) {
-                  await supabase.from('profiles').upsert({
-                    'id': user.id,
-                    'username': nameController.text.trim(),
-                    'major': majorController.text.trim().isEmpty ? null : majorController.text.trim(),
-                    'updated_at': DateTime.now().toIso8601String(),
-                  });
-
-                  Navigator.of(dialogContext).pop();
-                  if (mounted) {
-                    _showSuccessSnackBar('프로필이 업데이트되었습니다.');
-                    _loadUserProfile();
-                  }
-                }
-              } catch (error) {
-                if (mounted) {
-                  _showErrorSnackBar('프로필 업데이트에 실패했습니다.');
-                }
-              }
-            },
-            child: const Text('저장'),
+          const SizedBox(height: 16),
+          TextField(
+            controller: majorController,
+            decoration: const InputDecoration(
+              labelText: '전공 (선택사항)',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.school),
+              hintText: '예: 컴퓨터공학과',
+            ),
           ),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Text('취소', style: TextStyle(color: Colors.grey[600])),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () async {
+            if (nameController.text.trim().isEmpty) {
+              await PopupUtils.showError(
+                context: context,
+                title: '입력 오류',
+                message: '이름을 입력해주세요.',
+              );
+              return;
+            }
+
+            try {
+              final user = supabase.auth.currentUser;
+              if (user != null) {
+                await supabase.from('profiles').upsert({
+                  'id': user.id,
+                  'username': nameController.text.trim(),
+                  'major': majorController.text.trim().isEmpty ? null : majorController.text.trim(),
+                  'updated_at': DateTime.now().toIso8601String(),
+                });
+
+                Navigator.of(context).pop();
+                if (mounted) {
+                  await PopupUtils.showSuccess(
+                    context: context,
+                    title: '프로필 업데이트 완료',
+                    message: '프로필이 성공적으로 업데이트되었습니다.',
+                    onPressed: _loadUserProfile,
+                  );
+                }
+              }
+            } catch (error) {
+              if (mounted) {
+                await PopupUtils.showError(
+                  context: context,
+                  title: '업데이트 실패',
+                  message: '프로필 업데이트에 실패했습니다.',
+                );
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: const Text('저장'),
+        ),
+      ],
     );
   }
 
@@ -258,10 +319,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await _userService.backupDataToSupabase();
       if (mounted) {
-        _showSuccessSnackBar('백업 완료! 데이터가 안전하게 보관되었습니다.');
+        await PopupUtils.showSuccess(
+          context: context,
+          title: '백업 완료!',
+          message: '데이터가 서버에 안전하게 보관되었습니다.',
+        );
       }
     } catch (e) {
-      if (mounted) _showErrorSnackBar(e.toString());
+      if (mounted) {
+        await PopupUtils.showError(
+          context: context,
+          title: '백업 실패',
+          message: e.toString(),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
@@ -272,44 +343,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       await _userService.restoreDataFromSupabase();
       if (mounted) {
-        _showSuccessSnackBar('복원 완료! 스펙 정보를 최신 상태로 업데이트했습니다.');
+        await PopupUtils.showSuccess(
+          context: context,
+          title: '복원 완료!',
+          message: '스펙 정보를 최신 상태로 업데이트했습니다.',
+        );
       }
     } catch (e) {
-      if (mounted) _showErrorSnackBar(e.toString());
+      if (mounted) {
+        await PopupUtils.showError(
+          context: context,
+          title: '복원 실패',
+          message: e.toString(),
+        );
+      }
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
   }
 
   void _showRestoreDialog() {
-    showDialog(
+    PopupUtils.showConfirmation(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('데이터 복원 확인'),
-          ],
-        ),
-        content: const Text(
-            '정말 복원하시겠어요?\n\n현재 휴대폰의 스펙 정보는 모두 사라지고, 서버의 데이터로 대체됩니다. 이 작업은 되돌릴 수 없습니다.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              _restoreFromServer();
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('복원'),
-          ),
-        ],
-      ),
-    );
+      title: '데이터 복원 확인',
+      message: '정말 복원하시겠어요?\n\n현재 휴대폰의 스펙 정보는 모두 사라지고, 서버의 데이터로 대체됩니다. 이 작업은 되돌릴 수 없습니다.',
+      confirmText: '복원',
+      confirmColor: Colors.orange,
+      icon: Icons.warning_amber_rounded,
+    ).then((confirmed) {
+      if (confirmed == true) {
+        _restoreFromServer();
+      }
+    });
   }
 
   void _showAppInfo() {
@@ -338,22 +403,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const Text('💾 안전한 데이터 백업과 복원'),
       ],
     );
-  }
-
-  void _showErrorSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: Theme.of(context).colorScheme.error,
-    ));
-  }
-
-  void _showSuccessSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.green,
-    ));
   }
 
   @override
@@ -483,7 +532,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: '알림 설정',
                   subtitle: 'D-Day 알림, 추천 알림 등을 설정해보세요',
                   onTap: () {
-                    _showSuccessSnackBar('알림 설정 기능을 준비중입니다.');
+                    PopupUtils.showInfo(
+                      context: context,
+                      title: '알림 설정',
+                      message: '알림 설정 기능을 준비중입니다.',
+                      color: Colors.orange,
+                      icon: Icons.construction,
+                    );
                   },
                 ),
                 _buildMenuTile(
@@ -516,11 +571,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     try {
                       final data = await _userService.exportData();
                       if (mounted) {
-                        _showSuccessSnackBar('데이터를 준비했습니다. (실제 다운로드 기능은 준비중)');
+                        await PopupUtils.showInfo(
+                          context: context,
+                          title: '데이터 내보내기 준비 완료',
+                          message: '데이터를 준비했습니다. (실제 다운로드 기능은 준비중)',
+                          color: Colors.blue,
+                          icon: Icons.download_done,
+                        );
                         debugPrint('Export data: $data');
                       }
                     } catch (e) {
-                      if (mounted) _showErrorSnackBar('데이터 내보내기에 실패했습니다.');
+                      if (mounted) {
+                        await PopupUtils.showError(
+                          context: context,
+                          title: '내보내기 실패',
+                          message: '데이터 내보내기에 실패했습니다.',
+                        );
+                      }
                     }
                   },
                 ),
@@ -534,7 +601,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: '도움말 및 FAQ',
                   subtitle: '자주 묻는 질문과 사용법을 확인해보세요',
                   onTap: () {
-                    _showSuccessSnackBar('도움말 기능을 준비중입니다.');
+                    PopupUtils.showInfo(
+                      context: context,
+                      title: '도움말',
+                      message: '도움말 기능을 준비중입니다.',
+                      color: Colors.orange,
+                      icon: Icons.construction,
+                    );
                   },
                 ),
                 _buildMenuTile(
@@ -542,7 +615,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   title: '피드백 보내기',
                   subtitle: '개선 사항이나 버그를 신고해주세요',
                   onTap: () {
-                    _showSuccessSnackBar('피드백 기능을 준비중입니다.');
+                    PopupUtils.showInfo(
+                      context: context,
+                      title: '피드백',
+                      message: '피드백 기능을 준비중입니다.',
+                      color: Colors.orange,
+                      icon: Icons.construction,
+                    );
                   },
                 ),
                 _buildMenuTile(

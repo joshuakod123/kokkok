@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../utils/popup_utils.dart';
 
 final supabase = Supabase.instance.client;
 
@@ -13,12 +14,12 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _loginController = TextEditingController(); // 아이디/이메일 입력용
-  final _emailController = TextEditingController(); // 회원가입용 이메일
+  final _loginController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _usernameController = TextEditingController(); // 실명
-  final _userIdController = TextEditingController(); // 아이디
+  final _usernameController = TextEditingController();
+  final _userIdController = TextEditingController();
 
   bool _isLoginMode = true;
   bool _isLoading = false;
@@ -41,16 +42,26 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() { _isLoading = true; });
     try {
       if (_isLoginMode) {
-        // 로그인 로직 - 아이디 또는 이메일로 로그인 가능
         await _performLogin();
       } else {
-        // 회원가입 로직
         await _performSignUp();
       }
     } on AuthException catch (error) {
-      if (mounted) _showErrorSnackBar(error.message);
+      if (mounted) {
+        await PopupUtils.showError(
+          context: context,
+          title: '로그인 실패',
+          message: error.message,
+        );
+      }
     } catch (error) {
-      if (mounted) _showErrorSnackBar('예상치 못한 오류가 발생했습니다.');
+      if (mounted) {
+        await PopupUtils.showError(
+          context: context,
+          title: '오류 발생',
+          message: '예상치 못한 오류가 발생했습니다.',
+        );
+      }
     } finally {
       if (mounted) setState(() { _isLoading = false; });
     }
@@ -60,7 +71,6 @@ class _AuthScreenState extends State<AuthScreen> {
     final loginInput = _loginController.text.trim();
     String email = loginInput;
 
-    // 이메일이 아닌 아이디로 로그인 시도하는 경우, 아이디로 이메일을 찾기
     if (!loginInput.contains('@')) {
       try {
         final result = await supabase.rpc(
@@ -77,7 +87,6 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     }
 
-    // 이메일로 로그인
     await supabase.auth.signInWithPassword(
       email: email,
       password: _passwordController.text.trim(),
@@ -85,7 +94,6 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   Future<void> _performSignUp() async {
-    // 아이디 중복 확인
     final isDuplicateId = await _checkUserIdDuplicate(_userIdController.text.trim());
     if (isDuplicateId) {
       throw Exception('이미 사용 중인 아이디입니다.');
@@ -101,13 +109,19 @@ class _AuthScreenState extends State<AuthScreen> {
     );
 
     if (mounted) {
-      _showSuccessSnackBar('회원가입 완료! 로그인해주세요.');
-      setState(() {
-        _isLoginMode = true;
-        _passwordController.clear();
-        _confirmPasswordController.clear();
-        _loginController.text = _userIdController.text; // 가입한 아이디를 로그인 필드에 자동 입력
-      });
+      await PopupUtils.showSuccess(
+        context: context,
+        title: '회원가입 완료!',
+        message: '성공적으로 가입되었습니다. 이제 로그인해주세요.',
+        onPressed: () {
+          setState(() {
+            _isLoginMode = true;
+            _passwordController.clear();
+            _confirmPasswordController.clear();
+            _loginController.text = _userIdController.text;
+          });
+        },
+      );
     }
   }
 
@@ -144,25 +158,17 @@ class _AuthScreenState extends State<AuthScreen> {
         }
       } catch (error) {
         debugPrint('Password Reset Error: $error');
-        if (mounted) _showErrorSnackBar('사용자를 찾을 수 없거나 오류가 발생했습니다.');
+        if (mounted) {
+          await PopupUtils.showError(
+            context: context,
+            title: '비밀번호 찾기 실패',
+            message: '사용자를 찾을 수 없거나 오류가 발생했습니다.',
+          );
+        }
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: Theme.of(context).colorScheme.error,
-    ));
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message),
-      backgroundColor: Colors.green,
-    ));
   }
 
   Future<bool?> _showInputDialog({
@@ -170,73 +176,120 @@ class _AuthScreenState extends State<AuthScreen> {
     required String label,
     required TextEditingController controller,
   }) {
-    return showDialog<bool>(
+    return PopupUtils.showCustom(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-            controller: controller,
-            decoration: InputDecoration(labelText: label),
-            autofocus: true
+      title: title,
+      titleIcon: Icons.lock_reset,
+      titleColor: Colors.orange,
+      barrierDismissible: false,
+      content: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('취소')),
-          ElevatedButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('확인')),
-        ],
+        autofocus: true,
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: Text('취소', style: TextStyle(color: Colors.grey[600])),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: const Text('확인'),
+        ),
+      ],
     );
   }
 
   void _showTempPasswordDialog(String password, String loginInput) {
-    showDialog(
+    PopupUtils.showCustom(
       context: context,
+      title: '임시 비밀번호 발급 완료',
+      titleIcon: Icons.key,
+      titleColor: Colors.green,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('임시 비밀번호 발급 완료'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('임시 비밀번호가 발급되었습니다.\n아래 비밀번호로 로그인 후 즉시 변경해주세요.'),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: SelectableText(
-                password,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  fontFamily: 'monospace',
-                ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '임시 비밀번호가 발급되었습니다.\n아래 비밀번호로 로그인 후 즉시 변경해주세요.',
+            style: TextStyle(fontSize: 16, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: SelectableText(
+              password,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                fontFamily: 'monospace',
               ),
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: password));
-              _showSuccessSnackBar('임시 비밀번호가 복사되었습니다.');
-            },
-            child: const Text('복사하기'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _loginController.text = loginInput;
-              _passwordController.text = password;
-              _showSuccessSnackBar('임시 비밀번호로 로그인해주세요.');
-            },
-            child: const Text('로그인하기'),
           ),
         ],
       ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Clipboard.setData(ClipboardData(text: password));
+            PopupUtils.showSuccess(
+              context: context,
+              title: '복사 완료',
+              message: '임시 비밀번호가 클립보드에 복사되었습니다.',
+            );
+          },
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('복사하기'),
+        ),
+        const SizedBox(width: 8),
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+            _loginController.text = loginInput;
+            _passwordController.text = password;
+            PopupUtils.showInfo(
+              context: context,
+              title: '로그인 준비 완료',
+              message: '임시 비밀번호로 로그인해주세요.',
+              color: Colors.blue,
+              icon: Icons.login,
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          child: const Text('로그인하기'),
+        ),
+      ],
     );
   }
 
@@ -260,7 +313,6 @@ class _AuthScreenState extends State<AuthScreen> {
                     const SizedBox(height: 30),
 
                     if (_isLoginMode) ...[
-                      // 로그인 모드
                       TextFormField(
                           controller: _loginController,
                           decoration: const InputDecoration(labelText: '아이디 또는 이메일'),
@@ -274,7 +326,6 @@ class _AuthScreenState extends State<AuthScreen> {
                           validator: (v) => v==null || v.trim().length<6 ? '6자 이상 입력해주세요.' : null
                       ),
                     ] else ...[
-                      // 회원가입 모드
                       TextFormField(
                           controller: _usernameController,
                           decoration: const InputDecoration(labelText: '이름'),

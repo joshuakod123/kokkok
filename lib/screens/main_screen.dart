@@ -6,6 +6,7 @@ import 'certification_browse_screen.dart';
 import 'my_spec_screen.dart';
 import 'profile_screen.dart';
 import 'new_community_screen.dart';
+import '../utils/popup_utils.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final supabase = Supabase.instance.client;
@@ -143,29 +144,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
   void _showPasswordChangeNotification() {
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Container(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: const Row(
-            children: [
-              Icon(Icons.lock_outline, color: Colors.white, size: 20),
-              SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  '보안을 위해 비밀번호 변경을 먼저 완료해주세요.',
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: Colors.orange,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
+    PopupUtils.showWarning(
+      context: context,
+      title: '비밀번호 변경 필요',
+      message: '보안을 위해 비밀번호 변경을 먼저 완료해주세요.',
     );
   }
 
@@ -196,43 +178,10 @@ class _MainScreenState extends State<MainScreen> with TickerProviderStateMixin {
           Future.delayed(const Duration(milliseconds: 500), () {
             if (!mounted) return;
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.security, color: Colors.white, size: 24),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              '보안 알림',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              '안전을 위해 비밀번호를 변경해주세요.',
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                backgroundColor: Colors.orange,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                margin: const EdgeInsets.all(16),
-                duration: const Duration(seconds: 4),
-              ),
+            PopupUtils.showWarning(
+              context: context,
+              title: '🔒 보안 알림',
+              message: '안전을 위해 비밀번호를 변경해주세요.',
             );
           });
         } else {

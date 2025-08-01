@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../models/certification.dart';
 import '../services/certification_api_service.dart';
 import '../services/user_certification_service.dart';
+import '../utils/popup_utils.dart';
 
 class CertificationDetailScreen extends StatefulWidget {
   final Certification certification;
@@ -58,20 +59,21 @@ class _CertificationDetailScreenState extends State<CertificationDetailScreen> {
     if (_isFavorite) {
       _userService.addFavorite(widget.certification);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('관심 자격증에 추가되었습니다'),
-            backgroundColor: Colors.green,
-          ),
+        PopupUtils.showSuccess(
+          context: context,
+          title: '관심 자격증 추가!',
+          message: '${widget.certification.jmNm}이(가) 관심 자격증에 추가되었습니다.',
         );
       }
     } else {
       _userService.removeFavorite(widget.certification.jmCd);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('관심 자격증에서 제거되었습니다'),
-          ),
+        PopupUtils.showInfo(
+          context: context,
+          title: '관심 자격증에서 제거',
+          message: '${widget.certification.jmNm}이(가) 관심 자격증에서 제거되었습니다.',
+          color: Colors.grey,
+          icon: Icons.heart_broken,
         );
       }
     }
@@ -99,53 +101,37 @@ class _CertificationDetailScreenState extends State<CertificationDetailScreen> {
         setState(() {
           _isTarget = true;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${widget.certification.jmNm} 목표가 추가되었습니다!'),
-            backgroundColor: Colors.green,
-          ),
+        PopupUtils.showSuccess(
+          context: context,
+          title: '목표 추가 완료!',
+          message: '${widget.certification.jmNm} 목표가 추가되었습니다! 🎯',
         );
       }
     });
   }
 
   void _markAsOwned() {
-    showDialog(
+    PopupUtils.showConfirmation(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('자격증 취득 완료'),
-        content: Text('${widget.certification.jmNm}을(를) 취득하셨나요?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              _userService.addOwned(widget.certification);
-              setState(() {
-                _isOwned = true;
-                _isTarget = false;
-              });
-              Navigator.pop(context);
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('축하합니다! ${widget.certification.jmNm} 취득을 기록했습니다 🎉'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('완료'),
-          ),
-        ],
-      ),
-    );
+      title: '자격증 취득 완료',
+      message: '${widget.certification.jmNm}을(를) 취득하셨나요?',
+      confirmText: '완료',
+      confirmColor: Colors.green,
+      icon: Icons.celebration,
+    ).then((confirmed) {
+      if (confirmed == true && mounted) {
+        _userService.addOwned(widget.certification);
+        setState(() {
+          _isOwned = true;
+          _isTarget = false;
+        });
+        PopupUtils.showSuccess(
+          context: context,
+          title: '🎉 축하합니다!',
+          message: '${widget.certification.jmNm} 취득을 기록했습니다! 정말 대단해요!',
+        );
+      }
+    });
   }
 
   void _shareContent() {
@@ -163,11 +149,12 @@ ${widget.certification.description}
 
     Clipboard.setData(ClipboardData(text: content));
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('자격증 정보가 클립보드에 복사되었습니다'),
-          backgroundColor: Colors.blue,
-        ),
+      PopupUtils.showInfo(
+        context: context,
+        title: '공유 정보 복사 완료',
+        message: '자격증 정보가 클립보드에 복사되었습니다.',
+        color: Colors.blue,
+        icon: Icons.content_copy,
       );
     }
   }
