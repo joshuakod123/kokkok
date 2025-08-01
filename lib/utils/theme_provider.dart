@@ -1,3 +1,4 @@
+// lib/utils/theme_provider.dart - 완전 수정판
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -123,9 +124,9 @@ class ThemeProvider extends ChangeNotifier {
   MaterialColor _createMaterialColor(Color color) {
     final strengths = <double>[.05];
     final swatch = <int, Color>{};
-    final r = color.red;  // .r을 .red로 수정
-    final g = color.green;  // .g를 .green으로 수정
-    final b = color.blue;   // .b를 .blue로 수정
+    final r = color.r;  // 수정됨
+    final g = color.g;  // 수정됨
+    final b = color.b;  // 수정됨
 
     for (int i = 1; i < 10; i++) {
       strengths.add(0.1 * i);
@@ -139,7 +140,7 @@ class ThemeProvider extends ChangeNotifier {
         1,
       );
     }
-    return MaterialColor(color.value, swatch);
+    return MaterialColor(color.value, swatch);  // 수정됨
   }
 
   static const List<Color> predefinedColors = [

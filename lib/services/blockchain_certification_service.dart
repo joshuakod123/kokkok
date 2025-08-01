@@ -108,7 +108,7 @@ class BlockchainCertificationService {
       return transactionHash;
 
       // 4. 데이터베이스에 기록
-      final blockchainCert = await _supabase
+      await _supabase
           .from('blockchain_certifications')
           .insert({
         'certification_id': certificationId,
@@ -122,9 +122,7 @@ class BlockchainCertificationService {
         'metadata': nftMetadata,
         'status': 'verified',
         'ipfs_hash': ipfsHash,
-      })
-          .select()
-          .single();
+      });
 
       return transactionHash;
     } catch (e) {

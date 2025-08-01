@@ -22,13 +22,11 @@ class _NewCommunityScreenState extends State<NewCommunityScreen>
   final _certificationService = CertificationApiService();
 
   List<CommunityPost> _trendingPosts = [];
-  List<CommunityPost> _recentPosts = [];
   List<StudyGroup> _activeStudyGroups = [];
   List<CommunityPost> _successStories = [];
   List<Certification> _popularCertifications = [];
 
   bool _isLoading = true;
-  String _selectedFilter = 'all';
 
   @override
   void initState() {

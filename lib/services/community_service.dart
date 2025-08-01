@@ -149,7 +149,7 @@ class CommunityService {
             profiles:author_id(id, username, user_id)
           ''')
           .eq('post_id', postId)
-          .eq('parent_id', 'null') // null 값 필터링 수정
+          .isFilter('parent_id', null) // null 값 필터링 수정
           .order('created_at');
 
       final comments = response.map<CommunityComment>((data) => CommunityComment.fromJson(data)).toList();
